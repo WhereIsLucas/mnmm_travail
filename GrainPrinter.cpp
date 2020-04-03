@@ -18,3 +18,8 @@ const std::string &GrainPrinter::getPath() const {
 void GrainPrinter::setPath(const std::string &path) {
     GrainPrinter::path = path;
 }
+
+void GrainPrinter::clearPrint(int frameNumber) {
+    std::string fileName = "grain" + std::to_string(frameNumber) + ".txt";
+    remove(fileName.c_str());
+}

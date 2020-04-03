@@ -86,16 +86,13 @@ int main(int argc, char **argv) {
     }
 
     //CLEAR FILES
-//    #pragma omp parallel for default(shared)
     for (int l = 0; l <= totalFrames; l++) {
-        std::string fileName = "grain" + std::to_string(l) + ".txt";
-        remove(fileName.c_str());
+        grainPrinter.clearPrint(l);
     }
 
     //record initial state
-//    #pragma omp parallel for default(shared)
     for (i = 0; i < numberOfGrains; i++) {
-        grains[i].print(0);
+        grainPrinter.print(grains[i],0);
     }
 
     //linked cells
@@ -138,13 +135,11 @@ int main(int argc, char **argv) {
         /*** refresh and update position***/
 
         // linked cells
-       // #pragma omp parallel for
         for (i = 0; i < nCell; i++) {
             cellule[i].setHeadOfList(-9);
         }
 
         //grains
-        // #pragma omp parallel for default(shared)
         for (i = 0; i < numberOfGrains; i++) {
             //update positions
             grains[i].updatePosition(dt / 2.);
@@ -371,7 +366,6 @@ int main(int argc, char **argv) {
         }
 
         //update velocity and position
-//        #pragma omp parallel for default (none) shared(numberOfGrains, grains, dt)
         for (i = 0; i < numberOfGrains; i++) {
             grains[i].updateVelocity(dt);
             grains[i].updatePosition(dt / 2.);
@@ -385,7 +379,6 @@ int main(int argc, char **argv) {
         recTime = t - tStartCapture;
         if (recTime >= 0.) {
             if ((int) ((recTime + dt) * fps) > (int) (recTime * fps)) {
-//                #pragma omp parallel for default (none) shared(numberOfGrains, grainPrinter,grains, recTime, dt, fps )
                 for (i = 0; i < numberOfGrains; i++) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }

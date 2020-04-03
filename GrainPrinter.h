@@ -20,6 +20,7 @@ public:
 public:
     void print(Grain grain, int frameNumber);
 
+    void clearPrint(int frameNumber);
 };
 
 
