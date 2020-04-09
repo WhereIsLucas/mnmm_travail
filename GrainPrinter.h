@@ -14,13 +14,9 @@ private:
     std::string path;
 public:
     const std::string &getPath() const;
-
-    void setPath(const std::string &path);
-
-public:
     void print(Grain grain, int frameNumber);
-
     void clearPrint(int frameNumber);
+    void setPath(const std::string path);
 };
 
 

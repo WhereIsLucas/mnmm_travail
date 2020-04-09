@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
     GrainPrinter grainPrinter;
+    grainPrinter.setPath("datas/");
 
     // GRAINS
     int numberOfGrains = 100;
@@ -92,7 +93,7 @@ int main(int argc, char **argv) {
 
     //record initial state
     for (i = 0; i < numberOfGrains; i++) {
-        grainPrinter.print(grains[i],0);
+        grainPrinter.print(grains[i], 0);
     }
 
     //linked cells
