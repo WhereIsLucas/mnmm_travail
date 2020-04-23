@@ -7,7 +7,7 @@ void GrainPrinter::print(Grain grain, int frameNumber) {
     std::ofstream file;
     file.open(fileName.c_str(), std::ios::app);
     file.precision(10);
-    file << grain.index() << "," << grain.x() << "," << grain.y() << "," << grain.vx() << "," << grain.vy() << "," << grain.theta() << "," << grain.radius() << std::endl;
+    file << grain.index() << "," << grain.getX() << "," << grain.getY() << "," << grain.getVx() << "," << grain.getVy() << "," << grain.theta() << "," << grain.getRadius() << std::endl;
     file.close();
 
 }

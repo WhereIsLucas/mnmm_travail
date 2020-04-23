@@ -1,22 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <math.h>
+#include <cmath>
 #include "Grain.h"
 
 using namespace std;
 
-Grain::Grain()
-{
+Grain::Grain() = default;
 
-}
-
-Grain::~Grain()
-{
-    
-}
-
-void Grain::initDisk(int i_index, double i_radius, double i_mass, double i_x, double i_y, double i_vx, double i_vy)
+void Grain::initDisk(int i_index, double i_radius, double i_mass, Vector2 positionVector, Vector2 velocityVector)
 {
     m_index = i_index;
     m_linkedDisk = -9;
@@ -24,35 +16,29 @@ void Grain::initDisk(int i_index, double i_radius, double i_mass, double i_x, do
     m_radius = i_radius;
     m_mass = i_mass;
     m_inertia = 0.5*m_mass*m_radius*m_radius;
-    
-    m_x = i_x;
-    m_y = i_y;
-    m_vx = i_vx;
-    m_vy = i_vy;
-    m_v = sqrt(m_vx*m_vx+m_vy*m_vy);
-    m_ax = 0.;
-    m_ay = 0.;
-    
+
+    Grain::setPosition(positionVector);
+    Grain::setVelocity(velocityVector);
+    Grain::setAcceleration(Vector2(0.));
+
     m_theta = 0.;
     m_w = 0.;
     m_alpha = 0.;
-    
-    m_Fx = 0.;
-    m_Fy = 0.;
+
+    Grain::setForce(Vector2(0.));
+
     m_M = 0.;
 }
 
 void Grain::resetForce()
 {
-    m_Fx = 0.;
-    m_Fy = 0.;
+    Grain::setForce(Vector2(0.));
     m_M = 0.;
 }
 
-void Grain::addForce(double i_Fx, double i_Fy)
+void Grain::addForce(Vector2 addedForce)
 {
-    m_Fx += i_Fx;
-    m_Fy += i_Fy;
+    Grain::force = Grain::force + addedForce;
 }
 
 void Grain::addMomentum(double i_M)
@@ -60,28 +46,21 @@ void Grain::addMomentum(double i_M)
     m_M += i_M;
 }
 
-void Grain::addGravityForce(double i_gx, double i_gy)
+void Grain::addGravityForce(Vector2 gravityDirection)
 {
-    m_Fx += m_mass*i_gx;
-    m_Fy += m_mass*i_gy;
+    Grain::addForce(m_mass * gravityDirection);
 }
 
 void Grain::updatePosition(double dt)
 {
-    m_x += m_vx*dt;
-    m_y += m_vy*dt;
-    
+    Grain::position = Grain::getPosition() + dt*Grain::getVelocity();
     m_theta += m_w*dt;
 }
 
 void Grain::updateVelocity(double dt)
 {
-    m_ax = m_Fx/m_mass;
-    m_ay = m_Fy/m_mass;
-    m_vx += m_ax*dt;
-    m_vy += m_ay*dt;
-    m_v = sqrt(m_vx*m_vx+m_vy*m_vy);
-    
+    Grain::setAcceleration((1/m_mass)* Grain::force);
+    Grain::setVelocity(Grain::getVelocity() + dt*Grain::getAcceleration());
     m_alpha = m_M/m_inertia;
     m_w += m_alpha*dt;
 }
@@ -96,16 +75,6 @@ void Grain::setLinkedCell(int i_linkedCell)
     m_linkedCell = i_linkedCell;
 }
 
-void Grain::print(int i_num)
-{
-    std::string fileName = "grain" + std::to_string(i_num) + ".txt";
-    ofstream myfile;
-    myfile.open(fileName.c_str(),ios::app);
-    myfile.precision(10);
-    myfile<<m_index<<","<<m_x<<","<<m_y<<","<<m_vx<<","<<m_vy<<","<<m_theta<<","<<m_radius<<endl;
-    myfile.close();
-}
-
 int Grain::linkedDisk()
 {
     return m_linkedDisk;
@@ -116,39 +85,34 @@ int Grain::linkedCell()
     return m_linkedCell;
 }
 
-double Grain::radius()
+double Grain::getRadius()
 {
     return m_radius;
 }
 
-double Grain::mass()
+double Grain::getMass()
 {
     return m_mass;
 }
 
-double Grain::x()
+double Grain::getX()
 {
-    return m_x;
+    return Grain::position.getX();
 }
 
-double Grain::y()
+double Grain::getY()
 {
-    return m_y;
+    return Grain::position.getY();
 }
 
-double Grain::vx()
+double Grain::getVx()
 {
-    return m_vx;
+    return Grain::velocity.getX();
 }
 
-double Grain::vy()
+double Grain::getVy()
 {
-    return m_vy;
-}
-
-double Grain::v()
-{
-    return m_v;
+    return Grain::velocity.getY();
 }
 
 double Grain::w()
@@ -163,3 +127,44 @@ int Grain::index() {
 double Grain::theta() {
     return m_theta;
 }
+
+void Grain::setVelocity(const Vector2 &velocityVector) {
+    Grain::velocity = velocityVector;
+}
+
+const Vector2 &Grain::getAcceleration() const {
+    return acceleration;
+}
+
+void Grain::setAcceleration(const Vector2 &accelerationVector) {
+    Grain::acceleration = accelerationVector;
+}
+
+const Vector2 &Grain::getForce() const {
+    return force;
+}
+
+void Grain::setForce(const Vector2 &forceVector) {
+    Grain::force = forceVector;
+}
+
+const Vector2 &Grain::getPosition() const {
+    return position;
+}
+
+void Grain::setPosition(const Vector2 &positionVector) {
+    Grain::position = positionVector;
+}
+
+const Vector2 &Grain::getVelocity() const {
+    return velocity;
+}
+
+Grain::~Grain() {
+
+}
+
+double getDistanceBetweenGrains(Grain grain1, Grain grain2) {
+    getDistanceBetweenVectors(grain1.getPosition(),grain1.getPosition()) - (grain1.getRadius() + grain2.getRadius());
+}
+

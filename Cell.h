@@ -3,7 +3,7 @@ class Cell
     
 private:
     int m_index;
-    int m_headOfList;
+    int headOfList;
     int m_listOfNeighbors[9];
     int m_numberOfNeighbors;
     
@@ -14,7 +14,7 @@ public:
     void setHeadOfList(int);
     void addNeighbor(int);
     
-    int headOfList();
+    int getHeadOfList();
     int neighbor(int);
     int numberOfNeighbors();
 };

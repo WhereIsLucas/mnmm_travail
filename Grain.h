@@ -1,22 +1,33 @@
 #ifndef TRAVAIL2_GRAIN_H
 #define TRAVAIL2_GRAIN_H
 
+#include "Vector2.h"
+
 class Grain {
 
 private:
     int m_index;
-
+    Vector2 position;
+    Vector2 velocity;
+    Vector2 acceleration;
+    Vector2 force = Vector2(0);
+public:
+    const Vector2 &getPosition() const;
+    void setPosition(const Vector2 &positionVector);
+    const Vector2 &getVelocity() const;
+    void setVelocity(const Vector2 &velocity);
+    const Vector2 &getAcceleration() const;
+    void setAcceleration(const Vector2 &accelerationVector);
+    const Vector2 &getForce() const;
+    void setForce(const Vector2 &forceVector);
+private:
     int m_linkedCell;
     int m_linkedDisk;
 
     double m_radius, m_mass, m_inertia;
-    double m_x, m_y;
-    double m_vx, m_vy, m_v;
-    double m_ax, m_ay;
     double m_theta;
     double m_w;
     double m_alpha;
-    double m_Fx, m_Fy;
     double m_M;
 
 public:
@@ -24,7 +35,6 @@ public:
 
     ~Grain();
 
-    void initDisk(int, double, double, double, double, double, double);
 
     void updateVelocity(double);
 
@@ -32,11 +42,11 @@ public:
 
     void resetForce();
 
-    void addForce(double, double);
+    void addForce(Vector2 addedForce);
 
     void addMomentum(double);
 
-    void addGravityForce(double, double);
+    void addGravityForce(Vector2 gravityDirection);
 
     void setLinkedDisk(int);
 
@@ -48,27 +58,30 @@ public:
 
     int linkedDisk();
 
-    double radius();
+    double getRadius();
 
-    double x();
+    double getX();
 
-    double y();
+    double getY();
 
-    double vx();
+    double getVx();
 
-    double vy();
+    double getVy();
 
-    double v();
 
     double w();
 
 
-    double mass();
+    double getMass();
 
     int index();
 
     double theta();
 
+    void initDisk(int i_index, double i_radius, double i_mass, Vector2 positionVector, Vector2 velocityVector);
+
 };
+
+double getDistanceBetweenGrains(Grain grain1, Grain grain2);
 
 #endif
