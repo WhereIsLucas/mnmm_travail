@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     grainPrinter.setPath("datas/");
 
 // GRAINS
-    int numberOfGrains = 100;
+    int numberOfGrains = 10000;
     double radius = 0.0005;
     double mass;
     double rho = 2000.;
@@ -166,14 +166,11 @@ int main(int argc, char **argv) {
             cellIndex = (int) ((grains[i].getX() + container.getRadius() ) / dx) +
                         (int) ((grains[i].getY() + container.getRadius()) / dy) * nCellX;
             grains[i].setLinkedCell(cellIndex);
-            if(cellIndex < 0){
-                return 4;
-            }
             hol = cells[cellIndex].getHeadOfList();
             grains[i].setLinkedDisk(hol);
             cells[cellIndex].setHeadOfList(i);
             grains[i].resetForce();
-            grains[i].addGravityForce(Vector2(0, -9.81));
+//            grains[i].addGravityForce(Vector2(0, -9.81));
         }
 
 
@@ -262,9 +259,9 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
         double tangentForceNorm = -kt*tangentVelocity.getNorm();
         Vector2 tangentForce(-kt * tangentVelocity);
 
-        //TODO make this condition work.
+        // check if normal force is repulsive
         if (normalForceNorm > 0) {
-            Vector2 normalForce(tangentForceNorm);
+            Vector2 normalForce(tangentForceNorm*normalVector);
             pGrain1->addForce(normalForce);
             pGrain2->addForce(-1 * normalForce);
         } else {
@@ -272,7 +269,7 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
         }
 
 
-        if (tangentForce.getNorm() > mu * normalForce.getNorm()) {
+        if (tangentForce.getNorm() > mu * normalForceNorm) {
 //            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
 //            fty = -mu * fn * ty;
             pGrain1->addForce(Vector2(0));
