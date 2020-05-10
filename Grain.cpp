@@ -115,7 +115,7 @@ double Grain::getVy()
     return Grain::velocity.getY();
 }
 
-double Grain::w()
+double Grain::getOmega()
 {
     return m_w;
 }
@@ -124,7 +124,7 @@ int Grain::index() {
     return m_index;
 }
 
-double Grain::theta() {
+double Grain::getTheta() {
     return m_theta;
 }
 

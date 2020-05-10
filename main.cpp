@@ -11,13 +11,14 @@
 #include <chrono>
 
 void computeCollision(Grain *pGrain1, Grain *pGrain2);
+
 void computeCollisionWithContainer(Grain *pGrain1, Container *pContainer);
 
-double e = 0.9;
-double mu = 0.6;
-double kn = 200.;
+double e = 0.01;
+double mu = 0.1;
+double kn = 20.;
 double kt = 100000.;
-double dt = 0.0001;
+double dt = 4.*0.000001;
 
 
 int main(int argc, char **argv) {
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
     grainPrinter.setPath("datas/");
 
 // GRAINS
-    int numberOfGrains = 10000;
+    int numberOfGrains = 1;
     double radius = 0.0005;
     double mass;
     double rho = 2000.;
@@ -58,7 +59,7 @@ int main(int argc, char **argv) {
 
 //container
     double containerRadius = .3;
-    Vector2 containerCenter(.3, 0);
+    Vector2 containerCenter(0, 0);
     Container container(containerRadius, containerCenter);
 
     while (numberOfPlacedGrains < numberOfGrains) {
@@ -67,7 +68,7 @@ int main(int argc, char **argv) {
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) * .95;
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-
+        randomPosition.setComponents(0.3-randomRadius, 0);
         for (i = 0; i < numberOfPlacedGrains; i++) {
             if (getDistanceBetweenVectors(randomPosition, grains[i].getPosition()) <
                 radius + grains[i].getRadius()) {
@@ -102,39 +103,39 @@ int main(int argc, char **argv) {
     int nCellY = (int) ((containerRadius) / cellSize);
     int nCell = nCellX * nCellY;
     Cell *cells = new Cell[nCell];
-    double dx = (containerRadius*2.) / nCellX;
-    double dy = (containerRadius*2.) / nCellY;
+    double dx = (containerRadius * 2.) / nCellX;
+    double dy = (containerRadius * 2.) / nCellY;
     std::cout << "Cells values are initialized" << std::endl;
-    std::cout << "nCellX " << nCellX  << std::endl;
-    std::cout << "nCellY " << nCellY  << std::endl;
+    std::cout << "nCellX " << nCellX << std::endl;
+    std::cout << "nCellY " << nCellY << std::endl;
 
     int ix, iy, jx, jy;
     for (i = 0; i < nCell; i++) {
         cells[i].initCell(i);
         iy = i / nCellX;
         ix = i % nCellX;
-        if (ix > 0){ //if not first on the column
-            cells[i].addNeighbor(ix + (iy*nCellX) -1);
+        if (ix > 0) { //if not first on the column
+            cells[i].addNeighbor(ix + (iy * nCellX) - 1);
         }
-        if(ix < nCellX-1){ //if not last on the column
-            cells[i].addNeighbor(ix+ (iy*nCellX) +1);
+        if (ix < nCellX - 1) { //if not last on the column
+            cells[i].addNeighbor(ix + (iy * nCellX) + 1);
         }
-        if(iy > 0){ //if not on first line
-            cells[i].addNeighbor(ix+(iy-1)*nCellX);
-            if (ix > 0){ //if not first on the line
-                cells[i].addNeighbor(ix+(iy-1)*nCellX -1);
+        if (iy > 0) { //if not on first line
+            cells[i].addNeighbor(ix + (iy - 1) * nCellX);
+            if (ix > 0) { //if not first on the line
+                cells[i].addNeighbor(ix + (iy - 1) * nCellX - 1);
             }
-            if(ix < nCellX-1){ //if not last on the line
-                cells[i].addNeighbor(ix+(iy-1)*nCellX +1);
+            if (ix < nCellX - 1) { //if not last on the line
+                cells[i].addNeighbor(ix + (iy - 1) * nCellX + 1);
             }
         }
-        if(iy < nCellY-1){ //if not on last line
-            cells[i].addNeighbor(ix+((iy+1)*nCellX));
-            if (ix > 0){ //if not first on the line
-                cells[i].addNeighbor(ix+((iy+1)*nCellX) -1);
+        if (iy < nCellY - 1) { //if not on last line
+            cells[i].addNeighbor(ix + ((iy + 1) * nCellX));
+            if (ix > 0) { //if not first on the line
+                cells[i].addNeighbor(ix + ((iy + 1) * nCellX) - 1);
             }
-            if(ix < nCellX-1){ //if not last on the line
-                cells[i].addNeighbor(ix+((iy+1)*nCellX) +1);
+            if (ix < nCellX - 1) { //if not last on the line
+                cells[i].addNeighbor(ix + ((iy + 1) * nCellX) + 1);
             }
         }
     }
@@ -163,27 +164,28 @@ int main(int argc, char **argv) {
         for (i = 0; i < numberOfGrains; i++) {
 
             grains[i].updatePosition(dt / 2.);
-            cellIndex = (int) ((grains[i].getX() + container.getRadius() ) / dx) +
-                        (int) ((grains[i].getY() + container.getRadius()) / dy) * nCellX;
-            grains[i].setLinkedCell(cellIndex);
-            hol = cells[cellIndex].getHeadOfList();
-            grains[i].setLinkedDisk(hol);
-            cells[cellIndex].setHeadOfList(i);
+//            cellIndex = (int) ((grains[i].getX() + container.getRadius()) / dx) +
+//                        (int) ((grains[i].getY() + container.getRadius()) / dy) * nCellX;
+//            grains[i].setLinkedCell(cellIndex);
+//            hol = cells[cellIndex].getHeadOfList();
+//            grains[i].setLinkedDisk(hol);
+//            cells[cellIndex].setHeadOfList(i);
             grains[i].resetForce();
-//            grains[i].addGravityForce(Vector2(0, -9.81));
+            grains[i].addGravityForce(Vector2(0, -9.81));
         }
 
 
         /*** contact detection and forces ***/
         for (i = 0; i < numberOfGrains; i++) {
-            cellIndex = grains[i].linkedCell();
-            j = cells[cellIndex].getHeadOfList();
-            while (j != -9) {
-                if (i < j) {
-                    computeCollision(&grains[i],&grains[j]);
-                }
-                j = grains[j].linkedDisk();
-            }
+            // In cell
+//            cellIndex = grains[i].linkedCell();
+//            j = cells[cellIndex].getHeadOfList();
+//            while (j != -9) {
+//                if (i < j) {
+//                    computeCollision(&grains[i],&grains[j]);
+//                }
+//                j = grains[j].linkedDisk();
+//            }
 
 //in neighbor cells
 //            nNeighbors = cells[cellIndex].numberOfNeighbors();
@@ -197,7 +199,7 @@ int main(int argc, char **argv) {
 //            }
 
 //            Collisions with the container
-//            computeCollisionWithContainer(&grains[i], &container);
+            computeCollisionWithContainer(&grains[i], &container);
 //
         }
 
@@ -235,11 +237,11 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
     double delta = getDistanceBetweenGrains(*pGrain1, *pGrain2);
     if (delta < 0) {
         double vy = pGrain1->getVy() - pGrain2->getVy() -
-                    pGrain1->getRadius() * pGrain1->w() * normalVector.getX() -
-                    pGrain2->getRadius() * pGrain2->w() * normalVector.getX();
+                    pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX() -
+                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getX();
         double vx = pGrain1->getVx() - pGrain2->getVx() +
-                    pGrain1->getRadius() * pGrain1->w() * normalVector.getY() +
-                    pGrain2->getRadius() * pGrain2->w() * normalVector.getY();
+                    pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY() +
+                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getY();
         Vector2 velocityAtContactPoint(vx, vy);
         Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
                                velocityAtContactPoint.getY() * normalVector.getY());
@@ -248,20 +250,20 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
         if (tangentVelocity.getNorm() != 0.) {
             tangentVector = tangentVelocity.normalize();
         } else {
-            tangentVector.setComponents(0,0);
+            tangentVector.setComponents(0, 0);
         }
 
         //contact forces and torque
         double effectiveMass = (pGrain1->getMass() * pGrain2->getMass()) /
-                        (pGrain1->getMass() + pGrain2->getMass());
+                               (pGrain1->getMass() + pGrain2->getMass());
         double eta = -2. * log(e) * sqrt(effectiveMass * kn / (log(e) * log(e) + M_PI * M_PI));
         double normalForceNorm = -kn * delta - eta * normalVelocity.getNorm();
-        double tangentForceNorm = -kt*tangentVelocity.getNorm();
+        double tangentForceNorm = -kt * tangentVelocity.getNorm();
         Vector2 tangentForce(-kt * tangentVelocity);
 
         // check if normal force is repulsive
         if (normalForceNorm > 0) {
-            Vector2 normalForce(tangentForceNorm*normalVector);
+            Vector2 normalForce(tangentForceNorm * normalVector);
             pGrain1->addForce(normalForce);
             pGrain2->addForce(-1 * normalForce);
         } else {
@@ -288,48 +290,55 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
 }
 
 void computeCollisionWithContainer(Grain *pGrain1, Container *container) {
-    Vector2 normalVector = (pGrain1->getPosition() - container->getCenter()).normalize();
-    double delta = container->getRadius() - getDistanceBetweenVectors(pGrain1->getPosition(),container->getCenter());
+    double delta = container->getRadius() - pGrain1->getRadius() -
+                   getDistanceBetweenVectors(pGrain1->getPosition(), container->getCenter());
     if (delta < 0) {
+        Vector2 normalVector = (container->getCenter() - pGrain1->getPosition()).normalize();
+//        std::cout << normalVector.getX() << " " << normalVector.getY() << std::endl;
+//        std::cout << pGrain1->getX() << " " << pGrain1->getY() << std::endl;
         double vy = pGrain1->getVy();
         double vx = pGrain1->getVx();
+
         Vector2 velocityAtContactPoint(vx, vy);
         Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
                                velocityAtContactPoint.getY() * normalVector.getY());
         Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
-        Vector2 normalizedTangentVelocity;
+        Vector2 tangentVector(0);
         if (tangentVelocity.getNorm() != 0.) {
-            normalizedTangentVelocity = tangentVelocity.normalize();
-        } else {
-            normalizedTangentVelocity.setComponents(0,0);
+            tangentVector = tangentVelocity.normalize();
         }
 
         //contact forces and torque
         double effectiveMass = pGrain1->getMass();
-        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (log(e) * log(e) + M_PI * M_PI));
-        Vector2 normalForce((-kn * delta - eta) * normalVelocity);
-        Vector2 tangentForce(-kt * tangentVelocity);
+        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e),2) + pow(M_PI,2)));
+        double normalForceNorm = -1.*(kn * delta) + (eta * normalVelocity.getNorm());
+        double tangentForceNorm = -kt * tangentVelocity.getNorm();
+        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(),(tangentForceNorm * tangentVector.getY()));
 
-        //TODO make this condition work.
-        if (true) {
-            pGrain1->addForce(normalForce);
+        if (normalForceNorm > 0) {
+            pGrain1->addForce(normalForceNorm * normalVector);
+//            std::cout << (normalForceNorm * normalVector).getX() << "" << (normalForceNorm * normalVector).getY() << " N" << std::endl;
         } else {
-            double fn = 0.;
+            normalForceNorm = 0.;
         }
 
-        if (tangentForce.getNorm() > mu * normalForce.getNorm()) {
-//            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
-//            fty = -mu * fn * ty;
-            pGrain1->addForce(Vector2(0));
+        if (tangentForce.getNorm() > mu * normalForceNorm) {
+            pGrain1->addForce(-1 * mu * normalForceNorm * tangentVector);
         } else {
-            pGrain1->addForce(Vector2(0));
+            pGrain1->addForce(tangentForce);
         }
+        Vector2 forceVector = pGrain1->getForce();
+//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
 
-//torque
-//        double M = -pGrain1->getRadius() * nx * fty + pGrain1->getRadius() * ny * ftx;
-//        pGrain1->addMomentum(M);
-//        double M2 = -pGrain2->getRadius() * nx * fty + pGrain2->getRadius() * ny * ftx;
-//        pGrain2->addMomentum(M2);
+        //torque
+        double M = (-1 * pGrain1->getRadius() * normalVector.getX() * tangentForce.getY())
+                   + (pGrain1->getRadius() * normalVector.getY() * tangentForce.getX());
+//        std::cout << M << std::endl;
+
+        pGrain1->addMomentum(M);
     }
+
+
 }
+
 

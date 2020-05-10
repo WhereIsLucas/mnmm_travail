@@ -36,9 +36,10 @@ Vector2::Vector2() {}
 
 Vector2 Vector2::normalize() {
     Vector2 vector2 = *this;
-    if (vector2.getNorm() > 0){
-        vector2.x = vector2.x/vector2.getNorm();
-        vector2.y = vector2.y/vector2.getNorm();
+    double norm = vector2.getNorm();
+    if (norm > 0){
+        vector2.x = vector2.x/norm;
+        vector2.y = vector2.y/norm;
     }else{
         vector2 = Vector2(0.);
     }

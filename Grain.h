@@ -69,14 +69,14 @@ public:
     double getVy();
 
 
-    double w();
+    double getOmega();
 
 
     double getMass();
 
     int index();
 
-    double theta();
+    double getTheta();
 
     void initDisk(int i_index, double i_radius, double i_mass, Vector2 positionVector, Vector2 velocityVector);
 
