@@ -1,27 +1,27 @@
-class Plan
-{
-    
+#include "Vector2.h"
+
+class Plan {
+
 private:
-    
-    double m_t;
-    double m_x0, m_y0;
-    double m_x, m_y;
-    double m_vx, m_vy;
-    double m_nx, m_ny;
-    double m_amplx, m_amply;
-    double m_freqx, m_freqy;
-    
+    Vector2 position;
+public:
+    const Vector2 &getPosition() const;
+
+    void setPosition(const Vector2 &position);
+
+    const Vector2 &getNormal() const;
+
+    void setNormal(const Vector2 &normal);
+
+private:
+    Vector2 normal;
+
 public:
     Plan();
+
     ~Plan();
-    
-    void initPlan(double,double,double,double,double,double,double,double);
-    void updateVelocity(double);
-    void updatePosition(double);
-    double x();
-    double y();
-    double vx();
-    double vy();
-    double nx();
-    double ny();
+
+    void initPlan(Vector2, Vector2);
+
+    void initPlanFromCoordinates(Vector2 a, Vector2 b);
 };
