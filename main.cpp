@@ -8,6 +8,7 @@
 #include "GrainPrinter.h"
 #include "Container.h"
 #include "Vector2.h"
+#include "Domain.h"
 #include <chrono>
 
 void computeCollision(Grain *pGrain1, Grain *pGrain2);
@@ -31,8 +32,6 @@ int main(int argc, char **argv) {
 
     int i, j, k;
 
-// CONTACT PARAMETERS
-
 // VIDEO OPTIONS
     int fps = 50;
     double tStartCapture = 0.;
@@ -43,7 +42,7 @@ int main(int argc, char **argv) {
     grainPrinter.setPath("datas/");
 
 // GRAINS
-    int numberOfGrains = 1;
+    int numberOfGrains = 200;
     double radius = 0.0005;
     double mass;
     double rho = 2000.;
@@ -53,23 +52,31 @@ int main(int argc, char **argv) {
 
 //this setups the getRadius distribution
     double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 3),
-                                                              radiusMean + (radiusMean / 3));
+    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 2),
+                                                              radiusMean + (radiusMean / 2));
 
 
 //container
     double containerRadius = .3;
-    Vector2 containerCenter(0, 0);
+    Vector2 containerCenter(containerRadius);
     Container container(containerRadius, containerCenter);
 
+    //DOMAIN
+    double xDomain = 2. * containerRadius;
+    double yDomain = 2. * containerRadius;
+    Domain domain(xDomain, yDomain);
+    domain.printDomainInfos("datas/domain.txt");
+//ON place les grains
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
-        double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) * .95;
+        double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
+                              .95; //sqrt pour que ce soit uniforme
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        randomPosition.setComponents(0.3-randomRadius, 0);
-        for (i = 0; i < numberOfPlacedGrains; i++) {
+        randomPosition = randomPosition + containerCenter;
+//        randomPosition.setComponents(0.3-randomRadius, 0);
+        for (i = 0; i < numberOfPlacedGrains; i++) { //Regarder si il n'y a pas d'overlap
             if (getDistanceBetweenVectors(randomPosition, grains[i].getPosition()) <
                 radius + grains[i].getRadius()) {
                 numberOfOverlaps++;
@@ -78,7 +85,7 @@ int main(int argc, char **argv) {
         }
         if (numberOfOverlaps == 0) {
             mass = 4. / 3. * M_PI * pow(radius, 3) * rho;
-            grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, radius, mass, randomPosition, Vector2(0., 0.));
+            grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, radius, mass, randomPosition, Vector2(0.));
             numberOfPlacedGrains++;
         }
     }
@@ -99,12 +106,12 @@ int main(int argc, char **argv) {
 
 //linked cells
     double cellSize = 2.2 * radiusMean;
-    int nCellX = (int) ((containerRadius) / cellSize);
-    int nCellY = (int) ((containerRadius) / cellSize);
+    int nCellX = (int) ((domain.getX()) / cellSize);
+    int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
     Cell *cells = new Cell[nCell];
-    double dx = (containerRadius * 2.) / nCellX;
-    double dy = (containerRadius * 2.) / nCellY;
+//    double dx = (containerRadius * 2.) / nCellX;
+//    double dy = (containerRadius * 2.) / nCellY;
     std::cout << "Cells values are initialized" << std::endl;
     std::cout << "nCellX " << nCellX << std::endl;
     std::cout << "nCellY " << nCellY << std::endl;
@@ -164,12 +171,13 @@ int main(int argc, char **argv) {
         for (i = 0; i < numberOfGrains; i++) {
 
             grains[i].updatePosition(dt / 2.);
-//            cellIndex = (int) ((grains[i].getX() + container.getRadius()) / dx) +
-//                        (int) ((grains[i].getY() + container.getRadius()) / dy) * nCellX;
-//            grains[i].setLinkedCell(cellIndex);
-//            hol = cells[cellIndex].getHeadOfList();
-//            grains[i].setLinkedDisk(hol);
-//            cells[cellIndex].setHeadOfList(i);
+            cellIndex = (int) (grains[i].getX() / cellSize) +
+                        (int) ((grains[i].getY() / cellSize) * nCellX);
+
+            grains[i].setLinkedCell(cellIndex);
+            hol = cells[cellIndex].getHeadOfList();
+            grains[i].setLinkedDisk(hol);
+            cells[cellIndex].setHeadOfList(i);
             grains[i].resetForce();
             grains[i].addGravityForce(Vector2(0, -9.81));
         }
@@ -178,29 +186,29 @@ int main(int argc, char **argv) {
         /*** contact detection and forces ***/
         for (i = 0; i < numberOfGrains; i++) {
             // In cell
-//            cellIndex = grains[i].linkedCell();
-//            j = cells[cellIndex].getHeadOfList();
-//            while (j != -9) {
-//                if (i < j) {
-//                    computeCollision(&grains[i],&grains[j]);
-//                }
-//                j = grains[j].linkedDisk();
-//            }
+            cellIndex = grains[i].linkedCell();
+            j = cells[cellIndex].getHeadOfList();
+            while (j != -9) {
+                if (i < j) {
+                    computeCollision(&grains[i], &grains[j]);
+                }
+                j = grains[j].linkedDisk();
+            }
 
-//in neighbor cells
-//            nNeighbors = cells[cellIndex].numberOfNeighbors();
-//            for (k = 0; k < nNeighbors; k++) {
-//                neighborCellIndex = cells[cellIndex].neighbor(k);
-//                j = cells[neighborCellIndex].getHeadOfList();
-//                while (j != -9) {
-//                    computeCollision(&grains[i],&grains[j]);
-//                    j = grains[j].linkedDisk();
-//                }
-//            }
+            // In neighbor cells
+            nNeighbors = cells[cellIndex].numberOfNeighbors();
+            for (k = 0; k < nNeighbors; k++) {
+                neighborCellIndex = cells[cellIndex].neighbor(k);
+                j = cells[neighborCellIndex].getHeadOfList();
+                while (j != -9) {
+                    computeCollision(&grains[i], &grains[j]);
+                    j = grains[j].linkedDisk();
+                }
+            }
 
-//            Collisions with the container
+            //Collisions with the container
             computeCollisionWithContainer(&grains[i], &container);
-//
+
         }
 
         //update velocity and position
@@ -294,8 +302,7 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container) {
                    getDistanceBetweenVectors(pGrain1->getPosition(), container->getCenter());
     if (delta < 0) {
         Vector2 normalVector = (container->getCenter() - pGrain1->getPosition()).normalize();
-//        std::cout << normalVector.getX() << " " << normalVector.getY() << std::endl;
-//        std::cout << pGrain1->getX() << " " << pGrain1->getY() << std::endl;
+
         double vy = pGrain1->getVy();
         double vx = pGrain1->getVx();
 
@@ -313,7 +320,7 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container) {
         double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e),2) + pow(M_PI,2)));
         double normalForceNorm = -1.*(kn * delta) + (eta * normalVelocity.getNorm());
         double tangentForceNorm = -kt * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(),(tangentForceNorm * tangentVector.getY()));
+        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), tangentForceNorm * tangentVector.getY());
 
         if (normalForceNorm > 0) {
             pGrain1->addForce(normalForceNorm * normalVector);

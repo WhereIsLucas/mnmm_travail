@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 types = ['float', 'float', 'float', 'float', 'float', 'float', 'float']
+domainTypes = ['float', 'float']
 data = []
 
 # Set up formatting for the movie files
@@ -17,7 +18,7 @@ fig = plt.figure(figsize=(7, 7))
 path = "./cmake-build-debug/datas/"
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
-totalFrames = num_files
+totalFrames = num_files - 1
 for i in range(0, totalFrames):
     fileName = path + "/grain" + str(i) + ".txt"
     data.insert(i, np.genfromtxt(fileName,
@@ -29,12 +30,19 @@ scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, 
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
 plt.axis("equal")
-plt.xlim(-.4, .4)
-plt.ylim(-.4, .4)
+domain = np.genfromtxt(path + "/domain.txt",
+                       delimiter=',',
+                       dtype=domainTypes,
+                       names=['x', 'y'])
+
+plt.xlim(-0.2 * domain["x"], domain['x'] * 1.2)
+plt.ylim(-0.2 * domain["y"], domain['y'] * 1.2)
 plt.xlabel('x')
 plt.ylabel('y')
-a_circle = plt.Circle((0, 0), .3, fill=False)
+a_circle = plt.Circle((.3, .3), .3, fill=False)
 plt.gca().add_artist(a_circle)
+
+
 # plt.show()
 
 

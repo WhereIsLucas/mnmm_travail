@@ -19,14 +19,9 @@ public:
 
     Container(double radiusValue, Vector2 centerVector);
 
-public:
     double getRadius() const;
 
     void setRadius(double radiusValue);
-
-
-public:
-    void initContainer(double radiusValue, Vector2 centerPosition);
 
 };
 
