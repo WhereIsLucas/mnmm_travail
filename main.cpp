@@ -15,11 +15,12 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2);
 
 void computeCollisionWithContainer(Grain *pGrain1, Container *pContainer);
 
-double e = 0.01;
+// CONTACT PARAMETERS
+double e = 0.99;
 double mu = 0.1;
-double kn = 20.;
+double kn = 200.;
 double kt = 100000.;
-double dt = 4.*0.000001;
+double dt = 4. * 0.000001;
 
 
 int main(int argc, char **argv) {
@@ -32,12 +33,14 @@ int main(int argc, char **argv) {
 
     int i, j, k;
 
-// VIDEO OPTIONS
+
+    // VIDEO OPTIONS
     int fps = 50;
     double tStartCapture = 0.;
     double totalTime = 2;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
+    //TODO make nice constructor
     GrainPrinter grainPrinter;
     grainPrinter.setPath("datas/");
 
@@ -79,6 +82,7 @@ int main(int argc, char **argv) {
         for (i = 0; i < numberOfPlacedGrains; i++) { //Regarder si il n'y a pas d'overlap
             if (getDistanceBetweenVectors(randomPosition, grains[i].getPosition()) <
                 radius + grains[i].getRadius()) {
+                //BREAK
                 numberOfOverlaps++;
                 i = numberOfPlacedGrains;
             }
@@ -105,6 +109,7 @@ int main(int argc, char **argv) {
 
 
 //linked cells
+//TODO get max size
     double cellSize = 2.2 * radiusMean;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
@@ -244,12 +249,12 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
     Vector2 normalVector = (pGrain2->getPosition() - pGrain1->getPosition()).normalize();
     double delta = getDistanceBetweenGrains(*pGrain1, *pGrain2);
     if (delta < 0) {
-        double vy = pGrain1->getVy() - pGrain2->getVy() -
-                    pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX() -
-                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getX();
-        double vx = pGrain1->getVx() - pGrain2->getVx() +
-                    pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY() +
-                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getY();
+        double vy = pGrain1->getVy() - pGrain2->getVy();
+//                    - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX() -
+//                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getX();
+        double vx = pGrain1->getVx() - pGrain2->getVx();
+//                    + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY() +
+//                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getY();
         Vector2 velocityAtContactPoint(vx, vy);
         Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
                                velocityAtContactPoint.getY() * normalVector.getY());
@@ -265,7 +270,7 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2) {
         double effectiveMass = (pGrain1->getMass() * pGrain2->getMass()) /
                                (pGrain1->getMass() + pGrain2->getMass());
         double eta = -2. * log(e) * sqrt(effectiveMass * kn / (log(e) * log(e) + M_PI * M_PI));
-        double normalForceNorm = -kn * delta - eta * normalVelocity.getNorm();
+        double normalForceNorm = -1.*(kn * delta + eta * normalVelocity.getNorm());
         double tangentForceNorm = -kt * tangentVelocity.getNorm();
         Vector2 tangentForce(-kt * tangentVelocity);
 
@@ -317,10 +322,10 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container) {
 
         //contact forces and torque
         double effectiveMass = pGrain1->getMass();
-        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e),2) + pow(M_PI,2)));
-        double normalForceNorm = -1.*(kn * delta) + (eta * normalVelocity.getNorm());
+        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e), 2) + pow(M_PI, 2)));
+        double normalForceNorm = -1. * (kn * delta) + (eta * normalVelocity.getNorm());
         double tangentForceNorm = -kt * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), tangentForceNorm * tangentVector.getY());
+        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), (tangentForceNorm * tangentVector.getY()));
 
         if (normalForceNorm > 0) {
             pGrain1->addForce(normalForceNorm * normalVector);

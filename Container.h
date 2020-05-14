@@ -22,9 +22,6 @@ public:
     double getRadius() const;
 
     void setRadius(double radiusValue);
-
 };
-
-
 
 #endif //TRAVAIL2_CONTAINER_H

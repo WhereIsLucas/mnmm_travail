@@ -1,5 +1,4 @@
 import os.path
-
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,8 +7,7 @@ types = ['float', 'float', 'float', 'float', 'float', 'float', 'float']
 domainTypes = ['float', 'float']
 data = []
 
-# Set up formatting for the movie files
-
+# Set up the codec for the video file
 Writer = animation.writers['ffmpeg']
 writer = Writer(fps=15, metadata=dict(artist='Lucas H'), bitrate=1800)
 fig = plt.figure(figsize=(7, 7))
@@ -20,7 +18,7 @@ num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path
 print(num_files)
 totalFrames = num_files - 1
 for i in range(0, totalFrames):
-    fileName = path + "/grain" + str(i) + ".txt"
+    fileName = path + "grain" + str(i) + ".txt"
     data.insert(i, np.genfromtxt(fileName,
                                  delimiter=',',
                                  dtype=types,
