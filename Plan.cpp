@@ -1,13 +1,13 @@
 #include <math.h>
+#include <iostream>
+#include <fstream>
 #include "Plan.h"
 
-Plan::Plan()
-{
+Plan::Plan() {
 
 }
 
-Plan::~Plan()
-{
+Plan::~Plan() {
     
 }
 
@@ -35,4 +35,24 @@ const Vector2 &Plan::getNormal() const {
 
 void Plan::setNormal(const Vector2 &normal) {
     Plan::normal = normal;
+}
+
+void Plan::printPlanInfos(std::string fileName) {
+    std::ofstream file;
+    file.open(fileName.c_str());
+    file.precision(10);
+    Vector2 positionVector = Plan::getPosition();
+    Vector2 normalVector = Plan::getNormal();
+    double m = -normalVector.getX() / normalVector.getY();
+    double p = positionVector.getY() - positionVector.getX() * (m);
+    file << m << "," << p << std::endl;
+    file.close();
+}
+
+Vector2 Plan::getPointFromX(double xValue) {
+    Vector2 positionVector = Plan::getPosition();
+    Vector2 normalVector = Plan::getNormal();
+    double m = -normalVector.getX() / normalVector.getY();
+    double p = positionVector.getY() - positionVector.getX() * (m);
+    return Vector2(xValue, m * xValue + p);
 }

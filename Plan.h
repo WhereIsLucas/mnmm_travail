@@ -1,3 +1,4 @@
+#include <string>
 #include "Vector2.h"
 
 class Plan {
@@ -12,6 +13,10 @@ public:
     const Vector2 &getNormal() const;
 
     void setNormal(const Vector2 &normal);
+
+    void printPlanInfos(std::string fileName);
+
+    Vector2 getPointFromX(double xValue);
 
 private:
     Vector2 normal;

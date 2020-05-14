@@ -61,21 +61,34 @@ int main(int argc, char **argv) {
 
 //container
     double containerRadius = .3;
-    Vector2 containerCenter(containerRadius);
-    Container container(containerRadius, containerCenter);
 
+
+    int numberOfRevolution = 3;
     //DOMAIN
-    double xDomain = 2. * containerRadius;
-    double yDomain = 2. * containerRadius;
+    double xDomain = 2. * containerRadius * numberOfRevolution;
+    double yDomain = 2. * containerRadius * numberOfRevolution;
     Domain domain(xDomain, yDomain);
     domain.printDomainInfos("datas/domain.txt");
+
+    //plan
+    double alpha = M_PI / 12;
+    Vector2 a(0, xDomain * tan(alpha));
+    Vector2 b(xDomain, 0);
+    Plan plan;
+    plan.initPlanFromCoordinates(a, b);
+    plan.printPlanInfos("datas/plan.txt");
+
+//CONTAINER
+    Vector2 containerCenter = plan.getPointFromX(containerRadius) + Vector2(0, containerRadius);
+    Container container(containerRadius, containerCenter);
+
 //ON place les grains
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
-        double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
-                              .95; //sqrt pour que ce soit uniforme
+        double randomRadius =
+                (double) sqrt(uniformRealDistribution(gen)) * (containerRadius); //sqrt pour que ce soit uniforme
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
         randomPosition = randomPosition + containerCenter;
 //        randomPosition.setComponents(0.3-randomRadius, 0);
