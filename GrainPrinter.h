@@ -13,6 +13,8 @@ class GrainPrinter {
 private:
     std::string path;
 public:
+    GrainPrinter(const std::string &path);
+
     const std::string &getPath() const;
     void setPath(const std::string path);
 

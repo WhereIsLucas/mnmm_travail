@@ -23,3 +23,7 @@ void GrainPrinter::clearPrint(int frameNumber) {
     std::string fileName = GrainPrinter::getPath()+"grain" + std::to_string(frameNumber) + ".txt";
     remove(fileName.c_str());
 }
+
+GrainPrinter::GrainPrinter(const std::string &path) : path(path) {
+    GrainPrinter::path = path;
+}

@@ -20,7 +20,7 @@ double e = 0.99;
 double mu = 0.1;
 double kn = 200.;
 double kt = 100000.;
-double dt = 4. * 0.000001;
+double dt = 200. * 0.000001;
 
 
 int main(int argc, char **argv) {
@@ -40,11 +40,9 @@ int main(int argc, char **argv) {
     double totalTime = 2;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
-    //TODO make nice constructor
-    GrainPrinter grainPrinter;
-    grainPrinter.setPath("datas/");
+    GrainPrinter grainPrinter("datas/");
 
-// GRAINS
+    // GRAINS
     int numberOfGrains = 200;
     double radius = 0.0005;
     double mass;
@@ -53,23 +51,24 @@ int main(int argc, char **argv) {
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
 
-//this setups the getRadius distribution
+    //this setups the getRadius distribution
     double radiusMean = radius;
     std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 2),
                                                               radiusMean + (radiusMean / 2));
 
 
-//container
+    //container
     double containerRadius = .3;
     Vector2 containerCenter(containerRadius);
     Container container(containerRadius, containerCenter);
 
     //DOMAIN
-    double xDomain = 2. * containerRadius;
-    double yDomain = 2. * containerRadius;
+    double xDomain = 2. * containerRadius * 1.2;
+    double yDomain = 2. * containerRadius * 1.2;
     Domain domain(xDomain, yDomain);
     domain.printDomainInfos("datas/domain.txt");
-//ON place les grains
+
+    //On place les grains
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
