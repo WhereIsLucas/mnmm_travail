@@ -1,6 +1,5 @@
 #include <iostream>
 #include <random>
-#include <map>
 #include <omp.h>
 #include "Grain.h"
 #include "Plan.h"
@@ -10,7 +9,6 @@
 #include "Vector2.h"
 #include "Domain.h"
 #include "collisions.h"
-#include <chrono>
 
 // CONTACT PARAMETERS
 
@@ -28,7 +26,7 @@ int main(int argc, char **argv) {
     int i, j, k;
     // COLLISIONS SETTINGS
     auto containerCollisionSettings = new CollisionSettings(.99,.6,200.,100000.);
-    auto particlesCollisionSettings = new CollisionSettings(.99,.6,200.,100000.);
+    auto grainCollisionSettings = new CollisionSettings(.99,.6,200.,100000.);
 
     // VIDEO OPTIONS
     int fps = 50;
@@ -76,7 +74,7 @@ int main(int argc, char **argv) {
         randomPosition = randomPosition + containerCenter;
 //        randomPosition.setComponents(0.3-randomRadius, 0);
         // We check for an overlap
-        for (i = 0; i < numberOfPlacedGrains; i++) { //Regarder si il n'y a pas d'overlap
+        for (i = 0; i < numberOfPlacedGrains; i++) {
             if (getDistanceBetweenVectors(randomPosition, grains[i].getPosition()) <
                 radius + grains[i].getRadius()) {
                 numberOfOverlaps++;
@@ -116,7 +114,7 @@ int main(int argc, char **argv) {
     std::cout << "nCellX " << nCellX << std::endl;
     std::cout << "nCellY " << nCellY << std::endl;
 
-    int ix, iy, jx, jy;
+    int ix, iy;
     for (i = 0; i < nCell; i++) {
         cells[i].initCell(i);
         iy = i / nCellX;
@@ -151,15 +149,13 @@ int main(int argc, char **argv) {
     //variables
     int cellIndex, hol;
     int neighborCellIndex, nNeighbors;
-    double rx, ry, nx, ny, tx, ty;
-    double vn, vnx, vny, vt, vtx, vty;
-    double rij, delta;
-    double effectiveMass;
-    double fn, fnx, fny;
-    double ft, ftx, fty;
-    double M, t;
+    double t = 0.;
 
-    for (t = 0.; t < totalTime; t += dt) {
+    while (true) {
+        t += dt;
+        if(t < totalTime){
+            break;
+        }
         /*** refresh and update position***/
 
         // reset linked cells
@@ -185,26 +181,26 @@ int main(int argc, char **argv) {
 
         /*** contact detection and forces ***/
         for (i = 0; i < numberOfGrains; i++) {
-            // In cell
-//            cellIndex = grains[i].linkedCell();
-//            j = cells[cellIndex].getHeadOfList();
-//            while (j != -9) {
-//                if (i < j) {
-//                    computeCollision(&grains[i], &grains[j]);
-//                }
-//                j = grains[j].linkedDisk();
-//            }
+//             In cell
+            cellIndex = grains[i].linkedCell();
+            j = cells[cellIndex].getHeadOfList();
+            while (j != -9) {
+                if (i < j) {
+                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                }
+                j = grains[j].linkedDisk();
+            }
 
-//            // In neighbor cells
-//            nNeighbors = cells[cellIndex].numberOfNeighbors();
-//            for (k = 0; k < nNeighbors; k++) {
-//                neighborCellIndex = cells[cellIndex].neighbor(k);
-//                j = cells[neighborCellIndex].getHeadOfList();
-//                while (j != -9) {
-//                    computeCollision(&grains[i], &grains[j]);
-//                    j = grains[j].linkedDisk();
-//                }
-//            }
+            // In neighbor cells
+            nNeighbors = cells[cellIndex].numberOfNeighbors();
+            for (k = 0; k < nNeighbors; k++) {
+                neighborCellIndex = cells[cellIndex].neighbor(k);
+                j = cells[neighborCellIndex].getHeadOfList();
+                while (j != -9) {
+                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    j = grains[j].linkedDisk();
+                }
+            }
 
             //Collisions with the container
             computeCollisionWithContainer(&grains[i], &container, containerCollisionSettings);

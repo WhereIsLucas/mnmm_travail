@@ -9,7 +9,7 @@
 #include "Container.h"
 #include "CollisionSettings.h"
 
-void computeCollision(Grain *pGrain1, Grain *pGrain2);
+void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings *collisionSettings);
 
 void computeCollisionWithContainer(Grain *pGrain1, Container *container, CollisionSettings *collisionSettings);
 
