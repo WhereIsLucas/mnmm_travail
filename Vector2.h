@@ -31,8 +31,11 @@ public:
 
     Vector2();
 
-    void display();
+    [[maybe_unused]] void display() const;
+
 };
+
+Vector2 projectOntoVector(Vector2 vec, Vector2 vector);
 
 double getDistanceBetweenVectors(Vector2 vector1, Vector2 vector2);
 Vector2 crossProduct(Vector2 vector1, Vector2 vector2);

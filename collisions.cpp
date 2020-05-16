@@ -2,6 +2,7 @@
 // Created by lucas on 16/05/2020.
 //
 
+#include <iostream>
 #include "collisions.h"
 #include "Grain.h"
 #include "Container.h"
@@ -9,18 +10,18 @@
 
 
 void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings *collisionSettings) {
-    Vector2 normalVector = (pGrain2->getPosition() - pGrain1->getPosition()).normalize();
     double delta = getDistanceBetweenGrains(*pGrain1, *pGrain2);
     if (delta < 0) {
-        double vy = pGrain1->getVy() - pGrain2->getVy();
-//                    - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX() -
-//                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getX();
-        double vx = pGrain1->getVx() - pGrain2->getVx();
-//                    + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY() +
-//                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getY();
+        Vector2 normalVector = (pGrain2->getPosition() - pGrain1->getPosition()).normalize();
+        double vy = pGrain1->getVy() - pGrain2->getVy()
+                    - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX() -
+                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getX();
+        double vx = pGrain1->getVx() - pGrain2->getVx()
+                    + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY() +
+                    pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getY();
+
         Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
-                               velocityAtContactPoint.getY() * normalVector.getY());
+        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector);
         Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
         Vector2 tangentVector;
         if (tangentVelocity.getNorm() != 0.) {
@@ -34,22 +35,19 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
                                (pGrain1->getMass() + pGrain2->getMass());
         double eta = collisionSettings->getEta(effectiveMass);
         double normalForceNorm = -1.*(collisionSettings->getKn() * delta + eta * normalVelocity.getNorm());
-        double tangentForceNorm = -collisionSettings->getKt() * tangentVelocity.getNorm();
         Vector2 tangentForce(-collisionSettings->getKt() * tangentVelocity);
 
         // check if normal force is repulsive
-        if (normalForceNorm > 0) {
-            Vector2 normalForce(tangentForceNorm * normalVector);
+        if (normalForceNorm > 0.) {
+            Vector2 normalForce(normalForceNorm * normalVector);
             pGrain1->addForce(normalForce);
             pGrain2->addForce(-1 * normalForce);
         } else {
-            double fn = 0.;
+            normalForceNorm = 0.;
         }
 
 
         if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
-//            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
-//            fty = -mu * fn * ty;
             pGrain1->addForce(Vector2(0));
             pGrain1->addForce(-1. * Vector2(0));
         } else {
@@ -71,47 +69,39 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container, Collisi
                    getDistanceBetweenVectors(pGrain1->getPosition(), container->getCenter());
     if (delta < 0) {
         Vector2 normalVector = (container->getCenter() - pGrain1->getPosition()).normalize();
-
-        double vy = pGrain1->getVy();
-        double vx = pGrain1->getVx();
+        double vx = pGrain1->getVx() + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY();
+        double vy = pGrain1->getVy() - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX();
 
         Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
-                               velocityAtContactPoint.getY() * normalVector.getY());
+        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint,normalVector).getNorm() * normalVector;
         Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
         Vector2 tangentVector(0);
         if (tangentVelocity.getNorm() != 0.) {
             tangentVector = tangentVelocity.normalize();
         }
-
         //contact forces and torque
-        double effectiveMass = pGrain1->getMass();
+        double effectiveMass = pGrain1->getInertia();
         double eta = collisionSettings->getEta(effectiveMass);
-        double normalForceNorm = -1. * (collisionSettings->getKn() * delta) + (eta * normalVelocity.getNorm());
-        double tangentForceNorm = -collisionSettings->getKt() * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), (tangentForceNorm * tangentVector.getY()));
-
+        double normalForceNorm = -1. * ((collisionSettings->getKn() * delta) + (eta * normalVelocity.getNorm()));
+        double tangentForceNorm = -1.* collisionSettings->getKt() * tangentVelocity.getNorm();
+        Vector2 tangentForce(tangentForceNorm * tangentVector);
         if (normalForceNorm > 0) {
             pGrain1->addForce(normalForceNorm * normalVector);
-//            std::cout << (normalForceNorm * normalVector).getX() << "" << (normalForceNorm * normalVector).getY() << " N" << std::endl;
         } else {
             normalForceNorm = 0.;
         }
 
         if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
-            pGrain1->addForce(-1 * collisionSettings->getMu() * normalForceNorm * tangentVector);
-        } else {
-            pGrain1->addForce(tangentForce);
+            tangentForce = -1 * collisionSettings->getMu() * normalForceNorm * tangentVector;
         }
-//        Vector2 forceVector = pGrain1->getForce();
-//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
 
+        pGrain1->addForce(tangentForce);
         //torque
-        double M = (-1 * pGrain1->getRadius() * normalVector.getX() * tangentForce.getY())
-                   + (pGrain1->getRadius() * normalVector.getY() * tangentForce.getX());
-//        std::cout << M << std::endl;
-
+        double M = pGrain1->getRadius() *
+                     (-1.*normalVector.getX() * tangentForce.getY()
+                      + (normalVector.getY() * tangentForce.getX()));
         pGrain1->addMomentum(M);
+        return;
     }
 
 

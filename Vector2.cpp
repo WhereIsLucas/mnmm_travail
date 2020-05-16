@@ -55,8 +55,12 @@ void Vector2::setComponents(double xValue, double yValue) {
     y = yValue;
 }
 
-void Vector2::display() {
+[[maybe_unused]] void Vector2::display() const {
     std::cout << x << " "<< y << std::endl;
+}
+
+Vector2 projectOntoVector(Vector2 vec, Vector2 vec2) {
+    return  Vector2(vec.getX() * vec2.getX(),vec.getY() * vec2.getY());
 }
 
 

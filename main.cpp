@@ -12,7 +12,7 @@
 
 // CONTACT PARAMETERS
 
-double dt = 20. * 0.000001;
+double dt = 1. * 0.000001;
 
 
 int main(int argc, char **argv) {
@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
 
     int i, j, k;
     // COLLISIONS SETTINGS
-    auto containerCollisionSettings = new CollisionSettings(.99,.6,200.,100000.);
-    auto grainCollisionSettings = new CollisionSettings(.99,.6,200.,100000.);
+    auto containerCollisionSettings = new CollisionSettings(.9,.6,200.,1000000.);
+    auto grainCollisionSettings = new CollisionSettings(.9,.6,200.,1000000.);
 
     // VIDEO OPTIONS
     int fps = 50;
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
-    int numberOfGrains = 20;
+    int numberOfGrains = 2;
     double radius = 0.0005;
     double mass;
     double rho = 2000.;
@@ -71,8 +71,9 @@ int main(int argc, char **argv) {
         double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
                               .95;
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
+//        randomPosition.setComponents(0.1, -.2+.1*numberOfPlacedGrains);
+//        randomPosition.setComponents(.1,0.);
         randomPosition = randomPosition + containerCenter;
-//        randomPosition.setComponents(0.3-randomRadius, 0);
         // We check for an overlap
         for (i = 0; i < numberOfPlacedGrains; i++) {
             if (getDistanceBetweenVectors(randomPosition, grains[i].getPosition()) <
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
+    cellSize = domain.getX()/5.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
@@ -113,6 +115,7 @@ int main(int argc, char **argv) {
     std::cout << "Cells values are initialized" << std::endl;
     std::cout << "nCellX " << nCellX << std::endl;
     std::cout << "nCellY " << nCellY << std::endl;
+    std::cout << "nCells " << nCell << std::endl;
 
     int ix, iy;
     for (i = 0; i < nCell; i++) {
@@ -153,10 +156,9 @@ int main(int argc, char **argv) {
 
     while (true) {
         t += dt;
-        if(t < totalTime){
+        if(t > totalTime){
             break;
         }
-        /*** refresh and update position***/
 
         // reset linked cells
         for (i = 0; i < nCell; i++) {
@@ -166,10 +168,17 @@ int main(int argc, char **argv) {
         //loop on grains
         for (i = 0; i < numberOfGrains; i++) {
 
+            /* Leap frog step 1 */
             grains[i].updatePosition(dt / 2.);
             cellIndex = (int) (grains[i].getX() / cellSize) +
                         (int) ((grains[i].getY() / cellSize) * nCellX);
+            if(abs(cellIndex) > nCell-1){
+                grains[i].getPosition().display();
+                std::cout << "Out of domain limits" << std::endl;
+                exit(1);
+            }
 
+//            std::cout << grains[i].getY() << std::endl;
             grains[i].setLinkedCell(cellIndex);
             hol = cells[cellIndex].getHeadOfList();
             grains[i].setLinkedDisk(hol);
@@ -181,12 +190,13 @@ int main(int argc, char **argv) {
 
         /*** contact detection and forces ***/
         for (i = 0; i < numberOfGrains; i++) {
+
 //             In cell
             cellIndex = grains[i].linkedCell();
             j = cells[cellIndex].getHeadOfList();
             while (j != -9) {
                 if (i < j) {
-                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+//                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
                 }
                 j = grains[j].linkedDisk();
             }
@@ -194,10 +204,11 @@ int main(int argc, char **argv) {
             // In neighbor cells
             nNeighbors = cells[cellIndex].numberOfNeighbors();
             for (k = 0; k < nNeighbors; k++) {
+
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
                 while (j != -9) {
-                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+//                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
                     j = grains[j].linkedDisk();
                 }
             }
