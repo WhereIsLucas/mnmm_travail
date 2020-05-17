@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <iostream>
 #include "CollisionSettings.h"
 
 double CollisionSettings::getE() const {

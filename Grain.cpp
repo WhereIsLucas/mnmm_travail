@@ -199,6 +199,6 @@ void Grain::setMomentum(double momentum) {
 }
 
 double getDistanceBetweenGrains(Grain grain1, Grain grain2) {
-    return getDistanceBetweenVectors(grain1.getPosition(),grain1.getPosition()) - (grain1.getRadius() + grain2.getRadius());
+    return getDistanceBetweenVectors(grain1.getPosition(),grain2.getPosition()) - (grain1.getRadius() + grain2.getRadius());
 }
 

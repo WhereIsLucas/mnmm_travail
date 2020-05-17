@@ -9,7 +9,7 @@ data = []
 
 # Set up the codec for the video file
 Writer = animation.writers['ffmpeg']
-writer = Writer(fps=15, metadata=dict(artist='Lucas H'), bitrate=1800)
+writer = Writer(fps=25, metadata=dict(artist='Lucas H'), bitrate=1800)
 fig = plt.figure(figsize=(7, 7))
 
 # this counts the number of frames
@@ -37,17 +37,19 @@ plt.xlim(-0.2 * domain["x"], domain['x'] * 1.2)
 plt.ylim(-0.2 * domain["y"], domain['y'] * 1.2)
 plt.xlabel('x')
 plt.ylabel('y')
-a_circle = plt.Circle((.3, .3), .3, fill=False)
+a_circle = plt.Circle((.3, .4), .005)
+b_circle = plt.Circle((.3, .3), .3, fill=False)
 plt.gca().add_artist(a_circle)
+plt.gca().add_artist(b_circle)
 
 
-# plt.show()
+plt.savefig('exports/test.png')
 
 
 def update(frame_number):
     scat.set_offsets(np.c_[data[frame_number]["x"], data[frame_number]["y"]])
 
 
-animation = animation.FuncAnimation(fig, update, interval=10, frames=totalFrames)
+animation = animation.FuncAnimation(fig, update, interval=40, frames=totalFrames)
 # plt.show()
 animation.save('exports/im.mp4', writer=writer)

@@ -12,7 +12,6 @@
 
 // CONTACT PARAMETERS
 
-double dt = 1. * 0.000001;
 
 
 int main(int argc, char **argv) {
@@ -25,20 +24,22 @@ int main(int argc, char **argv) {
 
     int i, j, k;
     // COLLISIONS SETTINGS
-    auto containerCollisionSettings = new CollisionSettings(.9,.6,200.,1000000.);
-    auto grainCollisionSettings = new CollisionSettings(.9,.6,200.,1000000.);
+    auto containerCollisionSettings = new CollisionSettings(.9,.6,1000.,1000000.);
+    auto grainCollisionSettings = new CollisionSettings(.9,.6,8000.,1000000.);
 
     // VIDEO OPTIONS
-    int fps = 50;
+    int fps = 25;
     double tStartCapture = 0.;
-    double totalTime = 2;
+    double totalTime = 10;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
+    double dt = 1. * 0.000001;
+
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
     int numberOfGrains = 2;
-    double radius = 0.0005;
+    double radius = 0.005;
     double mass;
     double rho = 2000.;
     auto *grains = new Grain[numberOfGrains];
@@ -66,13 +67,13 @@ int main(int argc, char **argv) {
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
-        //We choose a random direction and an random radius
+        //We choose a random direction and a random radius
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
                               .95;
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-//        randomPosition.setComponents(0.1, -.2+.1*numberOfPlacedGrains);
-//        randomPosition.setComponents(.1,0.);
+        randomPosition.setComponents( (-.2)+(.2*numberOfPlacedGrains),0);
+//        randomPosition.setComponents(-.1,0.);
         randomPosition = randomPosition + containerCenter;
         // We check for an overlap
         for (i = 0; i < numberOfPlacedGrains; i++) {
@@ -81,6 +82,7 @@ int main(int argc, char **argv) {
                 numberOfOverlaps++;
                 // exiting the loop
                 i = numberOfPlacedGrains;
+                std::cout <<  "Overlap" << std::endl;
             }
         }
         if (numberOfOverlaps == 0) {
@@ -106,7 +108,7 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
-    cellSize = domain.getX()/5.;
+    cellSize = domain.getX()/1.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
@@ -196,7 +198,7 @@ int main(int argc, char **argv) {
             j = cells[cellIndex].getHeadOfList();
             while (j != -9) {
                 if (i < j) {
-//                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
                 }
                 j = grains[j].linkedDisk();
             }
@@ -208,7 +210,7 @@ int main(int argc, char **argv) {
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
                 while (j != -9) {
-//                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
                     j = grains[j].linkedDisk();
                 }
             }
@@ -231,13 +233,13 @@ int main(int argc, char **argv) {
                 for (i = 0; i < numberOfGrains; i++) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }
-                std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
             }
         }
     }
 
     delete[] cells;
     delete[] grains;
+    std::cout << "PRINTED " << (int) ((recTime + dt) * fps) << " images" << std::endl;
 
     // Recording end time.
     auto t2 = omp_get_wtime();
