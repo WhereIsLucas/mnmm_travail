@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 
     // GRAINS
     int numberOfGrains = 2;
-    double radius = 0.005;
+    double radius = 0.015;
     double mass;
     double rho = 2000.;
     auto *grains = new Grain[numberOfGrains];
@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
 
     //this setups the getRadius distribution
     double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 2),
-                                                              radiusMean + (radiusMean / 2));
+    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 3.),
+                                                              radiusMean + (radiusMean / 3.));
 
 
     //container
@@ -155,8 +155,10 @@ int main(int argc, char **argv) {
     int cellIndex, hol;
     int neighborCellIndex, nNeighbors;
     double t = 0.;
-
+    auto t1_image = omp_get_wtime();
+    int iteration = 0;
     while (true) {
+        iteration++;
         t += dt;
         if(t > totalTime){
             break;
@@ -232,7 +234,11 @@ int main(int argc, char **argv) {
             if ((int) ((recTime + dt) * fps) > (int) (recTime * fps)) {
                 for (i = 0; i < numberOfGrains; i++) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
+
                 }
+                auto t2_image = omp_get_wtime();
+                std::cout << "printing image " << (int) ((recTime + dt) * fps) << " | " <<  t2_image - t1_image << " seconds" << std::endl;
+                t1_image = omp_get_wtime();
             }
         }
     }

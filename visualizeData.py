@@ -24,7 +24,7 @@ for i in range(0, totalFrames):
                                  dtype=types,
                                  names=["ID", 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
 showingFrame = 0
-scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius'] * 1 * 100000)
+scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius']*data[0]['radius']*270000, c='red')
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
 plt.axis("equal")
