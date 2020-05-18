@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
-    int numberOfGrains = 2;
+    int numberOfGrains = 20;
     double radius = 0.015;
     double mass;
     double rho = 2000.;
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
         double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
                               .95;
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        randomPosition.setComponents( (-.2)+(.2*numberOfPlacedGrains),0);
+//        randomPosition.setComponents( (-.2)+(.2*numberOfPlacedGrains),0);
 //        randomPosition.setComponents(-.1,0.);
         randomPosition = randomPosition + containerCenter;
         // We check for an overlap
@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
-    cellSize = domain.getX()/1.;
+    cellSize = domain.getX()/5.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
