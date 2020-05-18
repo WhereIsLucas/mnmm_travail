@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
-    int paletteGrains = 0;
+    int paletteGrains = 10;
     int nPalettes = 3;
     int totalPalettesGrains = nPalettes * paletteGrains;
     double paletteRelativeWidth = .5;

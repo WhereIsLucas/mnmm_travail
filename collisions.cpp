@@ -50,7 +50,7 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
             tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
         }
         pGrain1->addForce(tangentForce);
-        pGrain1->addForce(-1.* tangentForce);
+        pGrain2->addForce(-1.* tangentForce);
 
 //torque
         double M = pGrain1->getRadius() *
