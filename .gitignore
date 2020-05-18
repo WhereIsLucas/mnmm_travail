@@ -73,3 +73,5 @@ fabric.properties
 
 /venv
 
+/exports
+/cmake-build-debug/datas

@@ -3,6 +3,8 @@
 #include <map>
 #include <omp.h>
 #include "Grain.h"
+#include "Barrel.h"
+#include "BarrelPrinter.h"
 #include "Plan.h"
 #include "Cell.h"
 #include "GrainPrinter.h"
@@ -16,6 +18,8 @@ void computeCollision(Grain *pGrain1, Grain *pGrain2);
 void computeCollisionWithContainer(Grain *pGrain1, Container *pContainer);
 
 void computeCollisionWithPlan(Grain *pGrain1, Plan *pplan);
+
+void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *pplan);
 
 // CONTACT PARAMETERS
 double e = 0.99;
@@ -45,15 +49,22 @@ int main(int argc, char **argv) {
     //TODO make nice constructor
     GrainPrinter grainPrinter;
     grainPrinter.setPath("datas/");
+    BarrelPrinter barrelPrinter;
+    barrelPrinter.setPath("datas/");
 
 // GRAINS
-    int numberOfGrains = 1;
+    int numberOfGrains = 0;
     double radius = 0.05;
     double mass;
     double rho = 2000.;
     auto *grains = new Grain[numberOfGrains];
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
+
+    //Barrel
+    double barrelRadius = 0.05;
+    double barrelMass = 1.;
+    auto *barrel = new Barrel;
 
 //this setups the getRadius distribution
     double radiusMean = radius;
@@ -64,8 +75,8 @@ int main(int argc, char **argv) {
 //container
     double containerRadius = .3;
 
-
     int numberOfRevolution = 3;
+
     //plan et domaine
     double alphaDegree = 30;
     double alpha = alphaDegree * M_PI / 180;
@@ -88,16 +99,18 @@ int main(int argc, char **argv) {
     Vector2 containerCenter = plan.getPointFromX(containerRadius) + Vector2(0, containerRadius);
     Container container(containerRadius, containerCenter);
 
-//ON place les grains
-    grains[0].initDisk(0, radius, 5 * mass, plan.getPointFromX(radius) + Vector2(0, radius), Vector2(0.));
+//ON place les grains et le barrel
+    barrel->initBarrel(barrelRadius, barrelMass, plan.getPointFromX(barrelRadius) + Vector2(0, barrelRadius),
+                       Vector2(0.));
+
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius =
-                (double) sqrt(uniformRealDistribution(gen)) * (containerRadius) * .95;//sqrt pour que ce soit uniforme
+                (double) sqrt(uniformRealDistribution(gen)) * (barrelRadius) * .95;//sqrt pour que ce soit uniforme
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        randomPosition = randomPosition + containerCenter;
+        randomPosition = randomPosition + barrel->getPosition();
         randomPosition.display();
 
 
@@ -117,7 +130,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    std::cout << "Grains are placed" << std::endl;
+    std::cout << "Grains and Barrel are placed" << std::endl;
 
 //CLEAR FILES
     for (int l = 0; l <= totalFrames; l++) {
@@ -128,6 +141,7 @@ int main(int argc, char **argv) {
     for (i = 0; i < numberOfGrains; i++) {
         grainPrinter.print(grains[i], 0);
     }
+//    barrelPrinter.print(reinterpret_cast<const Barrel &>(barrel), 0);
     std::cout << "Initial state in saved" << std::endl;
 
 
@@ -232,6 +246,7 @@ int main(int argc, char **argv) {
             //Collisions with the container
             //computeCollisionWithContainer(&grains[i], &container);
             computeCollisionWithPlan(&grains[i], &plan);
+            computeCollisionBetweenBarrelAndPlan(&barrel, &plan);
         }
 
         //update velocity and position
@@ -447,4 +462,80 @@ void computeCollisionWithPlan(Grain *pGrain1, Plan *plan) {
 
 }
 
+void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan) {
+    Vector2 normalVecteur = -1 * plan->getNormal();
+    Vector2 vecteur = plan->getPosition() - pBarrel->getPosition();
+    double delta = vecteur.getX() * normalVecteur.getX() + vecteur.getY() * normalVecteur.getY();
+
+
+    if (delta < 0) {
+
+        Vector2 normalVector = normalVecteur;
+
+        double vy = pBarrel->getVy();
+        double vx = pBarrel->getVx();
+
+        Vector2 velocityAtContactPoint(vx, vy);
+        Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
+                               velocityAtContactPoint.getY() * normalVector.getY());
+        Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
+        Vector2 tangentVector(0);
+        if (tangentVelocity.getNorm() != 0.) {
+            tangentVector = tangentVelocity.normalize();
+        }
+
+        //contact forces and torque
+        double effectiveMass = pBarrel->getMass();
+        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e), 2) + pow(M_PI, 2)));
+        double normalForceNorm = -1. * (kn * delta) + (eta * normalVelocity.getNorm());
+        double tangentForceNorm = -kt * tangentVelocity.getNorm();
+        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), (tangentForceNorm * tangentVector.getY()));
+
+        if (normalForceNorm > 0) {
+            pBarrel->addForce(normalForceNorm * normalVector);
+//         std::cout << (normalForceNorm * normalVector).getX() << "" << (normalForceNorm * normalVector).getY() << " N" << std::endl;
+        } else {
+            normalForceNorm = 0.;
+        }
+
+        if (tangentForce.getNorm() > mu * normalForceNorm) {
+            pBarrel->addForce(-1 * mu * normalForceNorm * tangentVector);
+            std::cout << "adding force" << std::endl;
+        } else {
+            pBarrel->addForce(tangentForce);
+        }
+        Vector2 forceVector = pBarrel->getForce();
+//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
+
+
+//CE QUE J AI AJOUTE
+        // check if normal force is repulsive
+        if (normalForceNorm > 0) {
+            Vector2 normalForce(tangentForceNorm * normalVector);
+            pBarrel->addForce(normalForce);
+        } else {
+            double fn = 0.;
+        }
+
+
+        if (tangentForce.getNorm() > mu * normalForceNorm) {
+//            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
+//            fty = -mu * fn * ty;
+            pBarrel->addForce(Vector2(0));
+            pBarrel->addForce(-1. * Vector2(0));
+        } else {
+            pBarrel->addForce(Vector2(0));
+        }
+//JUSQUICI
+
+        //torque
+        double M = (-1 * pBarrel->getRadius() * normalVector.getX() * tangentForce.getY())
+                   + (pBarrel->getRadius() * normalVector.getY() * tangentForce.getX());
+//        std::cout << M << std::endl;
+
+        pBarrel->addMomentum(M);
+    }
+
+
+}
 

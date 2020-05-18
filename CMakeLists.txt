@@ -15,4 +15,4 @@ add_executable(travail2
         Grain.h
         main.cpp
         Plan.cpp
-        Plan.h GrainPrinter.cpp GrainPrinter.h Vector2.cpp Vector2.h Domain.cpp Domain.h)
+        Plan.h GrainPrinter.cpp GrainPrinter.h Vector2.cpp Vector2.h Domain.cpp Domain.h Barrel.cpp Barrel.h BarrelPrinter.cpp BarrelPrinter.h)

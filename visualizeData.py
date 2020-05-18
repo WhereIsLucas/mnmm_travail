@@ -17,7 +17,7 @@ fig = plt.figure(figsize=(7, 7))
 path = "./cmake-build-debug/datas/"
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
-totalFrames = num_files - 2
+totalFrames = num_files - 3
 for i in range(0, totalFrames):
     fileName = path + "grain" + str(i) + ".txt"
     data.insert(i, np.genfromtxt(fileName,
