@@ -11,6 +11,7 @@
 
 void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings *collisionSettings) {
     double delta = getDistanceBetweenGrains(*pGrain1, *pGrain2);
+
     if (delta < 0) {
         Vector2 normalVector = (pGrain1->getPosition() - pGrain2->getPosition()).normalize();
         double vx = pGrain1->getVx() - pGrain2->getVx()
@@ -70,8 +71,10 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container, Collisi
                    getDistanceBetweenVectors(pGrain1->getPosition(), container->getCenter());
     if (delta < 0) {
         Vector2 normalVector = (container->getCenter() - pGrain1->getPosition()).normalize();
-        double vx = pGrain1->getVx() + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY();
-        double vy = pGrain1->getVy() - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX();
+        double radialSpeed = container->getRadialSpeed();
+        Vector2 containerSpeedVector(-radialSpeed*normalVector.getY(),radialSpeed*normalVector.getX());
+        double vx = pGrain1->getVx() - containerSpeedVector.getX() + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY();
+        double vy = pGrain1->getVy() - containerSpeedVector.getY() - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX();
 
         Vector2 velocityAtContactPoint(vx, vy);
         Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint,normalVector).getNorm() * normalVector;

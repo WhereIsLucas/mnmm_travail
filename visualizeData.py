@@ -24,7 +24,7 @@ for i in range(0, totalFrames):
                                  dtype=types,
                                  names=["ID", 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
 showingFrame = 0
-scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius'] * 1 * 100000)
+scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius']*data[0]['radius']*270000, c='red')
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
 plt.axis("equal")
@@ -37,9 +37,9 @@ plt.xlim(-0.2 * domain["x"], domain['x'] * 1.2)
 plt.ylim(-0.2 * domain["y"], domain['y'] * 1.2)
 plt.xlabel('x')
 plt.ylabel('y')
-a_circle = plt.Circle((.3, .4), .005)
+# a_circle = plt.Circle((.3, .4), .005)
+# plt.gca().add_artist(a_circle)
 b_circle = plt.Circle((.3, .3), .3, fill=False)
-plt.gca().add_artist(a_circle)
 plt.gca().add_artist(b_circle)
 
 

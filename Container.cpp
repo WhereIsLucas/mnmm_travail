@@ -21,8 +21,21 @@ void Container::setCenter(const Vector2 &centerVector) {
     Container::center = centerVector;
 }
 
-Container::Container(double radiusValue, Vector2 centerVector) {
+Container::Container(double radiusValue, Vector2 centerVector, double omegaValue) {
     Container::setRadius(radiusValue);
+    Container::setOmega(omegaValue);
     Container::setCenter(centerVector);
+}
+
+double Container::getOmega() const {
+    return omega;
+}
+
+void Container::setOmega(double omega) {
+    Container::omega = omega;
+}
+
+double Container::getRadialSpeed() {
+    return Container::omega * Container::getRadius();
 }
 

@@ -12,16 +12,24 @@ class Container {
 private:
     double radius{};
     Vector2 center;
+    double omega;
+public:
+    double getOmega() const;
+
+    void setOmega(double omega);
+
 public:
     const Vector2 &getCenter() const;
 
     void setCenter(const Vector2 &centerVector);
 
-    Container(double radiusValue, Vector2 centerVector);
+    Container(double radiusValue, Vector2 centerVector, double omegaValue);
 
     double getRadius() const;
 
     void setRadius(double radiusValue);
+
+    double getRadialSpeed();
 };
 
 #endif //TRAVAIL2_CONTAINER_H

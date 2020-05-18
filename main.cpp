@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     int i, j, k;
     // COLLISIONS SETTINGS
     auto containerCollisionSettings = new CollisionSettings(.9,.6,1000.,1000000.);
-    auto grainCollisionSettings = new CollisionSettings(.9,.6,8000.,1000000.);
+    auto grainCollisionSettings = new CollisionSettings(.9,.6,1000.,1000.);
 
     // VIDEO OPTIONS
     int fps = 25;
@@ -33,29 +33,39 @@ int main(int argc, char **argv) {
     double totalTime = 10;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
-    double dt = 1. * 0.000001;
+    double dt = .5 * 0.000001;
 
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
-    int numberOfGrains = 2;
-    double radius = 0.005;
+    int paletteGrains = 0;
+    int nPalettes = 3;
+    int totalPalettesGrains = nPalettes * paletteGrains;
+    double paletteRelativeWidth = .5;
+    double paletteGrainRadius = .01;
+
+    int numberOfGrains = 3;
+    int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
+    double radius = 0.02;
     double mass;
     double rho = 2000.;
-    auto *grains = new Grain[numberOfGrains];
+    auto *grains = new Grain[numberOfGrainsWithPalettes];
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
 
     //this setups the getRadius distribution
     double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 2),
-                                                              radiusMean + (radiusMean / 2));
+    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 3),
+                                                              radiusMean + (radiusMean / 3));
 
 
     //container
     double containerRadius = .3;
+    double containerOmega = .3*M_PI;
+    containerOmega = 0.;
     Vector2 containerCenter(containerRadius);
-    Container container(containerRadius, containerCenter);
+    Container container(containerRadius, containerCenter,containerOmega);
+
 
     //DOMAIN
     double xDomain = 2. * containerRadius * 1.2;
@@ -63,8 +73,24 @@ int main(int argc, char **argv) {
     Domain domain(xDomain, yDomain);
     domain.printDomainInfos("datas/domain.txt");
 
-    //Placing the grains
-    while (numberOfPlacedGrains < numberOfGrains) {
+    //Placing the grains for the palettes
+
+    for (int m = 0; m < nPalettes; ++m) {
+        double direction = (2.*M_PI/ (double) nPalettes) * m;
+        double positionRadius = containerRadius;
+        double dPositionRadius = containerRadius*paletteRelativeWidth/(double)paletteGrains;
+        for (int l = 0; l < paletteGrains; ++l) {
+            mass = 4. / 3. * M_PI * pow(radius, 3) * rho;
+            Vector2 paletteGrainPosition(positionRadius * cos(direction), positionRadius * sin(direction));
+            paletteGrainPosition = paletteGrainPosition + containerCenter;
+            grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, paletteGrainRadius, mass, paletteGrainPosition, Vector2(0.));
+            numberOfPlacedGrains++;
+            positionRadius -= dPositionRadius;
+        }
+    }
+
+
+    while (numberOfPlacedGrains < numberOfGrainsWithPalettes) {
         radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
         //We choose a random direction and a random radius
@@ -72,8 +98,8 @@ int main(int argc, char **argv) {
         double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
                               .95;
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        randomPosition.setComponents( (-.2)+(.2*numberOfPlacedGrains),0);
-//        randomPosition.setComponents(-.1,0.);
+//        randomPosition.setComponents( (-.2)+(.2*numberOfPlacedGrains),0);
+//        randomPosition.setComponents(0.,0.);
         randomPosition = randomPosition + containerCenter;
         // We check for an overlap
         for (i = 0; i < numberOfPlacedGrains; i++) {
@@ -100,7 +126,7 @@ int main(int argc, char **argv) {
     }
 
     //record initial state
-    for (i = 0; i < numberOfGrains; i++) {
+    for (i = 0; i < numberOfGrainsWithPalettes; i++) {
         grainPrinter.print(grains[i], 0);
     }
     std::cout << "Initial state in saved" << std::endl;
@@ -108,7 +134,7 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
-    cellSize = domain.getX()/1.;
+//    cellSize = domain.getX()/1.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
@@ -155,8 +181,10 @@ int main(int argc, char **argv) {
     int cellIndex, hol;
     int neighborCellIndex, nNeighbors;
     double t = 0.;
-
+    auto t1_image = omp_get_wtime();
+    int iteration = 0;
     while (true) {
+        iteration++;
         t += dt;
         if(t > totalTime){
             break;
@@ -168,7 +196,7 @@ int main(int argc, char **argv) {
         }
 
         //loop on grains
-        for (i = 0; i < numberOfGrains; i++) {
+        for (i = 0; i < numberOfGrainsWithPalettes; i++) {
 
             /* Leap frog step 1 */
             grains[i].updatePosition(dt / 2.);
@@ -180,7 +208,6 @@ int main(int argc, char **argv) {
                 exit(1);
             }
 
-//            std::cout << grains[i].getY() << std::endl;
             grains[i].setLinkedCell(cellIndex);
             hol = cells[cellIndex].getHeadOfList();
             grains[i].setLinkedDisk(hol);
@@ -191,14 +218,17 @@ int main(int argc, char **argv) {
 
 
         /*** contact detection and forces ***/
-        for (i = 0; i < numberOfGrains; i++) {
+        for (i = 0; i < numberOfGrainsWithPalettes; i++) {
 
 //             In cell
             cellIndex = grains[i].linkedCell();
             j = cells[cellIndex].getHeadOfList();
             while (j != -9) {
                 if (i < j) {
-                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    if (i >= totalPalettesGrains || j >= totalPalettesGrains)
+                    {
+                        computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    }
                 }
                 j = grains[j].linkedDisk();
             }
@@ -206,33 +236,56 @@ int main(int argc, char **argv) {
             // In neighbor cells
             nNeighbors = cells[cellIndex].numberOfNeighbors();
             for (k = 0; k < nNeighbors; k++) {
-
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
                 while (j != -9) {
-                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    if (i >= totalPalettesGrains || j >= totalPalettesGrains)
+                    {
+                        computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    }
                     j = grains[j].linkedDisk();
                 }
             }
 
             //Collisions with the container
-            computeCollisionWithContainer(&grains[i], &container, containerCollisionSettings);
+            if (i >= totalPalettesGrains){
+                computeCollisionWithContainer(&grains[i], &container, containerCollisionSettings);
+            }
 
         }
 
-        //update velocity and position
-        for (i = 0; i < numberOfGrains; i++) {
+        //update velocity and position for the active grains
+        for (i = totalPalettesGrains; i < numberOfGrainsWithPalettes; i++) {
             grains[i].updateVelocity(dt);
             grains[i].updatePosition(dt / 2.);
+        }
+
+        double dTheta = containerOmega*dt;
+        for (int m = 0; m < nPalettes; ++m) {
+            double direction = ((2.*M_PI/ (double) nPalettes) * m ) - dTheta*iteration;
+            double positionRadius = containerRadius;
+            double dPositionRadius = containerRadius*paletteRelativeWidth/(double)paletteGrains;
+            for (int l = 0; l < paletteGrains; ++l) {
+                Vector2 paletteGrainPosition(positionRadius * cos(direction), positionRadius * sin(direction));
+                Vector2 paletteGrainVelocity(paletteGrainPosition.getY()*containerOmega,-paletteGrainPosition.getX()*containerOmega);
+                paletteGrainPosition = paletteGrainPosition + containerCenter;
+                grains[l+m*paletteGrains].setPosition(paletteGrainPosition);
+                grains[l+m*paletteGrains].setVelocity(paletteGrainVelocity);
+                positionRadius -= dPositionRadius;
+            }
         }
 
         //record
         recTime = t - tStartCapture;
         if (recTime >= 0.) {
             if ((int) ((recTime + dt) * fps) > (int) (recTime * fps)) {
-                for (i = 0; i < numberOfGrains; i++) {
+                for (i = 0; i < numberOfGrainsWithPalettes; i++) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
+
                 }
+                auto t2_image = omp_get_wtime();
+                std::cout << "printing image " << (int) ((recTime + dt) * fps) << " | " <<  t2_image - t1_image << " seconds" << std::endl;
+                t1_image = omp_get_wtime();
             }
         }
     }
