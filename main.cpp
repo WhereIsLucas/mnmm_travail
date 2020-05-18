@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 
     int numberOfGrains = 3;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
-    double radius = 0.02;
+    double radius = 0.005;
     double mass;
     double rho = 2000.;
     auto *grains = new Grain[numberOfGrainsWithPalettes];
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
-//    cellSize = domain.getX()/1.;
+    cellSize = domain.getX()/6.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
