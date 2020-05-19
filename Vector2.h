@@ -1,6 +1,3 @@
-//
-// Created by lucas on 22/04/2020.
-//
 
 #ifndef TRAVAIL2_VECTOR2_H
 #define TRAVAIL2_VECTOR2_H

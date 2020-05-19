@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     int i, j, k;
     // COLLISIONS SETTINGS
     auto containerCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
-    auto grainCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000.);
+    auto grainCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
 
     // VIDEO OPTIONS
     int fps = 25;

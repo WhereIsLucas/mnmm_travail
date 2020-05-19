@@ -1,6 +1,3 @@
-//
-// Created by lucas on 28/03/2020.
-//
 
 #ifndef TRAVAIL2_CONTAINER_H
 #define TRAVAIL2_CONTAINER_H

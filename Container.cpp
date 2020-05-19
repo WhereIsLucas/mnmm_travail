@@ -1,6 +1,3 @@
-//
-// Created by lucas on 28/03/2020.
-//
 
 #include "Container.h"
 #include "Vector2.h"

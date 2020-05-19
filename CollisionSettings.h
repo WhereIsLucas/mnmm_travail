@@ -1,7 +1,3 @@
-//
-// Created by lucas on 16/05/2020.
-//
-
 #ifndef TRAVAIL2_COLLISIONSETTINGS_H
 #define TRAVAIL2_COLLISIONSETTINGS_H
 

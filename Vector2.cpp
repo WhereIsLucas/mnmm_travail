@@ -1,6 +1,4 @@
-//
-// Created by lucas on 22/04/2020.
-//
+
 
 #include <cmath>
 #include <iostream>

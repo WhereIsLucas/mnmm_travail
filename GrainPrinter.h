@@ -1,7 +1,3 @@
-//
-// Created by lucas on 02/04/2020.
-//
-
 #ifndef TRAVAIL2_GRAINPRINTER_H
 #define TRAVAIL2_GRAINPRINTER_H
 

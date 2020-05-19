@@ -1,6 +1,4 @@
-//
-// Created by lucas on 16/05/2020.
-//
+
 
 #include <iostream>
 #include "collisions.h"
