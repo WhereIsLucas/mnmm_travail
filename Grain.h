@@ -14,21 +14,51 @@ private:
 public:
     const Vector2 &getPosition() const;
     void setPosition(const Vector2 &positionVector);
+
     const Vector2 &getVelocity() const;
+
     void setVelocity(const Vector2 &velocity);
+
     const Vector2 &getAcceleration() const;
+
     void setAcceleration(const Vector2 &accelerationVector);
+
     const Vector2 &getForce() const;
+
     void setForce(const Vector2 &forceVector);
+
 private:
     int m_linkedCell;
     int m_linkedDisk;
 
-    double m_radius, m_mass, m_inertia;
-    double m_theta;
-    double m_w;
-    double m_alpha;
-    double m_M;
+    double radius, mass, inertia;
+public:
+    void setRadius(double radius);
+
+    void setMass(double mass);
+
+    double getInertia() const;
+
+    void setInertia(double inertia);
+
+public:
+    void setTheta(double theta);
+
+    void setOmega(double omega);
+
+    double getAlpha() const;
+
+    void setAlpha(double alpha);
+
+private:
+    double theta;
+    double omega;
+    double alpha;
+    double momentum;
+public:
+    double getMomentum() const;
+
+    void setMomentum(double momentum);
 
 public:
     Grain();
@@ -70,7 +100,6 @@ public:
 
 
     double getOmega();
-
 
     double getMass();
 

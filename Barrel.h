@@ -12,6 +12,30 @@ private:
     Vector2 force = Vector2(0);
 
     double radius, mass, inertia;
+public:
+    void setRadius(double radius);
+
+    void setMass(double mass);
+
+    double getInertia() const;
+
+    void setInertia(double inertia);
+
+    void setTheta(double theta);
+
+    double getW() const;
+
+    void setW(double w);
+
+    double getAlpha() const;
+
+    void setAlpha(double alpha);
+
+    double getM() const;
+
+    void setM(double m);
+
+private:
     double theta;
     double w;
     double alpha;

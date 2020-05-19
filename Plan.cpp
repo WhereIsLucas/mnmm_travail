@@ -13,12 +13,12 @@ Plan::~Plan() {
 
 void Plan::initPlan(Vector2 positionVector, Vector2 normalVector) {
     Plan::position = positionVector;
-    Plan::normal = normalVector;
+    Plan::normal = normalVector.normalize();
 }
 
 void Plan::initPlanFromCoordinates(Vector2 a, Vector2 b) {
     Plan::position = 0.5 * (a + b);
-    Plan::normal = Vector2(-(b - a).getY(), (b - a).getX());
+    Plan::normal = Vector2(-(b - a).getY(), (b - a).getX()).normalize();
 }
 
 const Vector2 &Plan::getPosition() const {

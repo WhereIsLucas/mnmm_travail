@@ -55,13 +55,17 @@ void Vector2::setComponents(double xValue, double yValue) {
     y = yValue;
 }
 
-void Vector2::display() {
-    std::cout << x << " "<< y << std::endl;
+[[maybe_unused]] void Vector2::display() const {
+    std::cout << x << " " << y << std::endl;
+}
+
+Vector2 projectOntoVector(Vector2 vec, Vector2 vec2) {
+    return Vector2(vec.getX() * vec2.getX(), vec.getY() * vec2.getY());
 }
 
 
 double getDistanceBetweenVectors(Vector2 vector1, Vector2 vector2) {
-    return sqrt(pow(vector1.getX() - vector2.getX(),2) +pow(vector1.getY() - vector2.getY(),2));
+    return sqrt(pow(vector1.getX() - vector2.getX(), 2) + pow(vector1.getY() - vector2.getY(), 2));
 }
 
 

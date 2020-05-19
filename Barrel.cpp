@@ -11,17 +11,17 @@ Barrel::~Barrel() {
 }
 
 void Barrel::initBarrel(double radius, double mass, Vector2 positionVector, Vector2 velocityVector) {
-    radius = radius;
-    mass = mass;
+    Barrel::setRadius(radius);
+    Barrel::setMass(mass);
     inertia = 0.5 * mass * radius * radius;
 
     Barrel::setPosition(positionVector);
     Barrel::setVelocity(velocityVector);
     Barrel::setAcceleration(Vector2(0.));
 
-    theta = 0.;
-    w = 0.;
-    alpha = 0.;
+    Barrel::setTheta(0.);
+    Barrel::setW(0.);
+    Barrel::setAlpha(0.);
 
     Barrel::setForce(Vector2(0.));
 
@@ -120,4 +120,48 @@ double Barrel::getTheta() {
 
 double Barrel::getVx() {
     return Barrel::velocity.getX();
+}
+
+void Barrel::setRadius(double radius) {
+    Barrel::radius = radius;
+}
+
+void Barrel::setMass(double mass) {
+    Barrel::mass = mass;
+}
+
+double Barrel::getInertia() const {
+    return inertia;
+}
+
+void Barrel::setInertia(double inertia) {
+    Barrel::inertia = inertia;
+}
+
+void Barrel::setTheta(double theta) {
+    Barrel::theta = theta;
+}
+
+double Barrel::getW() const {
+    return w;
+}
+
+void Barrel::setW(double w) {
+    Barrel::w = w;
+}
+
+double Barrel::getAlpha() const {
+    return alpha;
+}
+
+void Barrel::setAlpha(double alpha) {
+    Barrel::alpha = alpha;
+}
+
+double Barrel::getM() const {
+    return M;
+}
+
+void Barrel::setM(double m) {
+    M = m;
 }

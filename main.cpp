@@ -11,15 +11,10 @@
 #include "Container.h"
 #include "Vector2.h"
 #include "Domain.h"
+#include "Collisions.h"
 #include <chrono>
 
-void computeCollision(Grain *pGrain1, Grain *pGrain2);
-
-void computeCollisionWithContainer(Grain *pGrain1, Container *pContainer);
-
 void computeCollisionWithPlan(Grain *pGrain1, Plan *pplan);
-
-void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *pplan);
 
 // CONTACT PARAMETERS
 double e = 0.99;
@@ -29,7 +24,10 @@ double kt = 100000.;
 double dt = 10. * 0.000001;
 
 
+
 int main(int argc, char **argv) {
+    auto grainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
+    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
     auto t1 = omp_get_wtime();
 
     std::random_device rd;
@@ -47,8 +45,7 @@ int main(int argc, char **argv) {
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
     //TODO make nice constructor
-    GrainPrinter grainPrinter;
-    grainPrinter.setPath("datas/");
+    GrainPrinter grainPrinter("datas/");
     BarrelPrinter barrelPrinter;
     barrelPrinter.setPath("datas/");
 
@@ -62,9 +59,9 @@ int main(int argc, char **argv) {
     int numberOfOverlaps;
 
     //Barrel
-    double barrelRadius = 0.05;
+    double barrelRadius = 1.;
     double barrelMass = 1.;
-    auto *barrel = new Barrel;
+    Barrel barrel;
 
 //this setups the getRadius distribution
     double radiusMean = radius;
@@ -100,8 +97,12 @@ int main(int argc, char **argv) {
     Container container(containerRadius, containerCenter);
 
 //ON place les grains et le barrel
-    barrel->initBarrel(barrelRadius, barrelMass, plan.getPointFromX(barrelRadius) + Vector2(0, barrelRadius),
-                       Vector2(0.));
+    double xBarrel = barrelRadius - barrelRadius * sin(alpha);
+    Vector2 barrelPosition(plan.getPointFromX(xBarrel));
+    double deltaBarrel = barrelPosition.getY() - barrelRadius;
+    barrel.initBarrel(barrelRadius, barrelMass,
+                      plan.getPointFromX(barrelRadius) + Vector2(0, barrelRadius) - Vector2(0, deltaBarrel),
+                      Vector2(0.));
 
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
@@ -110,7 +111,7 @@ int main(int argc, char **argv) {
         double randomRadius =
                 (double) sqrt(uniformRealDistribution(gen)) * (barrelRadius) * .95;//sqrt pour que ce soit uniforme
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        randomPosition = randomPosition + barrel->getPosition();
+        randomPosition = randomPosition + barrel.getPosition();
         randomPosition.display();
 
 
@@ -135,13 +136,14 @@ int main(int argc, char **argv) {
 //CLEAR FILES
     for (int l = 0; l <= totalFrames; l++) {
         grainPrinter.clearPrint(l);
+        barrelPrinter.clearPrint(l);
     }
 
 //record initial state
     for (i = 0; i < numberOfGrains; i++) {
         grainPrinter.print(grains[i], 0);
     }
-//    barrelPrinter.print(reinterpret_cast<const Barrel &>(barrel), 0);
+    barrelPrinter.print(barrel, 0);
     std::cout << "Initial state in saved" << std::endl;
 
 
@@ -218,6 +220,9 @@ int main(int argc, char **argv) {
             grains[i].resetForce();
             grains[i].addGravityForce(Vector2(0, -9.81));
         }
+        barrel.updatePosition(dt / 2.);
+        barrel.resetForce();
+        barrel.addGravityForce(Vector2(0, -9.81));
 
 
         /*** contact detection and forces ***/
@@ -227,7 +232,7 @@ int main(int argc, char **argv) {
             j = cells[cellIndex].getHeadOfList();
             while (j != -9) {
                 if (i < j) {
-                    computeCollision(&grains[i], &grains[j]);
+                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
                 }
                 j = grains[j].linkedDisk();
             }
@@ -238,7 +243,7 @@ int main(int argc, char **argv) {
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
                 while (j != -9) {
-                    computeCollision(&grains[i], &grains[j]);
+                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
                     j = grains[j].linkedDisk();
                 }
             }
@@ -246,15 +251,16 @@ int main(int argc, char **argv) {
             //Collisions with the container
             //computeCollisionWithContainer(&grains[i], &container);
             computeCollisionWithPlan(&grains[i], &plan);
-            computeCollisionBetweenBarrelAndPlan(&barrel, &plan);
         }
+        computeCollisionBetweenBarrelAndPlan(&barrel, &plan, barrelCollisionsSettings);
 
         //update velocity and position
         for (i = 0; i < numberOfGrains; i++) {
             grains[i].updateVelocity(dt);
             grains[i].updatePosition(dt / 2.);
         }
-
+        barrel.updateVelocity(dt);
+        barrel.updatePosition(dt / 2.);
         //record
         recTime = t - tStartCapture;
         if (recTime >= 0.) {
@@ -262,6 +268,7 @@ int main(int argc, char **argv) {
                 for (i = 0; i < numberOfGrains; i++) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }
+                barrelPrinter.print(barrel, (int) ((recTime + dt) * fps));
                 std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
             }
         }
@@ -278,104 +285,7 @@ int main(int argc, char **argv) {
 
 }
 
-void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings *collisionSettings) {
-    double delta = getDistanceBetweenGrains(*pGrain1, *pGrain2);
-    if (delta < 0) {
-        Vector2 normalVector = (pGrain1->getPosition() - pGrain2->getPosition()).normalize();
-        double vx = pGrain1->getVx() - pGrain2->getVx()
-                    + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY()
-                    + pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getY();
-        double vy = pGrain1->getVy() - pGrain2->getVy()
-                    - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX()
-                    - pGrain2->getRadius() * pGrain2->getOmega() * normalVector.getX();
 
-        Vector2 velocityAtContactPoint(vx, vy);
-
-        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector).getNorm() * normalVector;
-        Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
-        Vector2 tangentVector(0);
-        if (tangentVelocity.getNorm() != 0.) {
-            tangentVector = tangentVelocity.normalize();
-        }
-
-        //contact forces and torque
-        double effectiveMass = (pGrain1->getMass() * pGrain2->getMass()) /
-                               (pGrain1->getMass() + pGrain2->getMass());
-        double eta = collisionSettings->getEta(effectiveMass);
-        double normalForceNorm = -1. * (collisionSettings->getKn() * delta + eta * normalVelocity.getNorm());
-        double tangentForceNorm = -1. * collisionSettings->getKt() * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector);
-        // check if normal force is repulsive
-        if (normalForceNorm > 0.) {
-            pGrain1->addForce(normalForceNorm * normalVector);
-            pGrain2->addForce(-1. * normalForceNorm * normalVector);
-        } else {
-            normalForceNorm = 0.;
-        }
-
-
-        if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
-            tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
-        }
-        pGrain1->addForce(tangentForce);
-        pGrain2->addForce(-1. * tangentForce);
-
-//torque
-        double M = pGrain1->getRadius() *
-                   (-1. * normalVector.getX() * tangentForce.getY()
-                    + (normalVector.getY() * tangentForce.getX()));
-        pGrain1->addMomentum(M);
-        double M2 = pGrain2->getRadius() *
-                    (-1. * normalVector.getX() * tangentForce.getY()
-                     + (normalVector.getY() * tangentForce.getX()));
-        pGrain2->addMomentum(M2);
-        return;
-    }
-}
-
-
-void computeCollisionWithContainer(Grain *pGrain1, Container *container, CollisionSettings *collisionSettings) {
-    double delta = container->getRadius() - pGrain1->getRadius() -
-                   getDistanceBetweenVectors(pGrain1->getPosition(), container->getCenter());
-    if (delta < 0) {
-        Vector2 normalVector = (container->getCenter() - pGrain1->getPosition()).normalize();
-        double vx = pGrain1->getVx() + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY();
-        double vy = pGrain1->getVy() - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX();
-
-        Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector).getNorm() * normalVector;
-        Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
-        Vector2 tangentVector(0);
-        if (tangentVelocity.getNorm() != 0.) {
-            tangentVector = tangentVelocity.normalize();
-        }
-        //contact forces and torque
-        double effectiveMass = pGrain1->getMass();
-        double eta = collisionSettings->getEta(effectiveMass);
-        double normalForceNorm = -1. * ((collisionSettings->getKn() * delta) + (eta * normalVelocity.getNorm()));
-        double tangentForceNorm = -1. * collisionSettings->getKt() * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector);
-        if (normalForceNorm > 0) {
-            pGrain1->addForce(normalForceNorm * normalVector);
-        } else {
-            normalForceNorm = 0.;
-        }
-
-        if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
-            tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
-        }
-
-        pGrain1->addForce(tangentForce);
-        //torque
-        double M = pGrain1->getRadius() *
-                   (-1. * normalVector.getX() * tangentForce.getY()
-                    + (normalVector.getY() * tangentForce.getX()));
-        pGrain1->addMomentum(M);
-        return;
-    }
-
-
-}
 
 void computeCollisionWithPlan(Grain *pGrain1, Plan *plan) {
     Vector2 normalVecteur = -1 * plan->getNormal();
@@ -454,80 +364,4 @@ void computeCollisionWithPlan(Grain *pGrain1, Plan *plan) {
 
 }
 
-void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan) {
-    Vector2 normalVecteur = -1 * plan->getNormal();
-    Vector2 vecteur = plan->getPosition() - pBarrel->getPosition();
-    double delta = vecteur.getX() * normalVecteur.getX() + vecteur.getY() * normalVecteur.getY();
-
-
-    if (delta < 0) {
-
-        Vector2 normalVector = normalVecteur;
-
-        double vy = pBarrel->getVy();
-        double vx = pBarrel->getVx();
-
-        Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
-                               velocityAtContactPoint.getY() * normalVector.getY());
-        Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
-        Vector2 tangentVector(0);
-        if (tangentVelocity.getNorm() != 0.) {
-            tangentVector = tangentVelocity.normalize();
-        }
-
-        //contact forces and torque
-        double effectiveMass = pBarrel->getMass();
-        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e), 2) + pow(M_PI, 2)));
-        double normalForceNorm = -1. * (kn * delta) + (eta * normalVelocity.getNorm());
-        double tangentForceNorm = -kt * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), (tangentForceNorm * tangentVector.getY()));
-
-        if (normalForceNorm > 0) {
-            pBarrel->addForce(normalForceNorm * normalVector);
-//         std::cout << (normalForceNorm * normalVector).getX() << "" << (normalForceNorm * normalVector).getY() << " N" << std::endl;
-        } else {
-            normalForceNorm = 0.;
-        }
-
-        if (tangentForce.getNorm() > mu * normalForceNorm) {
-            pBarrel->addForce(-1 * mu * normalForceNorm * tangentVector);
-            std::cout << "adding force" << std::endl;
-        } else {
-            pBarrel->addForce(tangentForce);
-        }
-        Vector2 forceVector = pBarrel->getForce();
-//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
-
-
-//CE QUE J AI AJOUTE
-        // check if normal force is repulsive
-        if (normalForceNorm > 0) {
-            Vector2 normalForce(tangentForceNorm * normalVector);
-            pBarrel->addForce(normalForce);
-        } else {
-            double fn = 0.;
-        }
-
-
-        if (tangentForce.getNorm() > mu * normalForceNorm) {
-//            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
-//            fty = -mu * fn * ty;
-            pBarrel->addForce(Vector2(0));
-            pBarrel->addForce(-1. * Vector2(0));
-        } else {
-            pBarrel->addForce(Vector2(0));
-        }
-//JUSQUICI
-
-        //torque
-        double M = (-1 * pBarrel->getRadius() * normalVector.getX() * tangentForce.getY())
-                   + (pBarrel->getRadius() * normalVector.getY() * tangentForce.getX());
-//        std::cout << M << std::endl;
-
-        pBarrel->addMomentum(M);
-    }
-
-
-}
 
