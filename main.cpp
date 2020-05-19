@@ -27,7 +27,7 @@ double dt = 10. * 0.000001;
 
 int main(int argc, char **argv) {
     auto grainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
-    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
+    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
     auto t1 = omp_get_wtime();
 
     std::random_device rd;
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 
     //Barrel
     double barrelRadius = 1.;
-    double barrelMass = 1.;
+    double barrelMass = 0.1;
     Barrel barrel;
 
 //this setups the getRadius distribution

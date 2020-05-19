@@ -1,7 +1,3 @@
-//
-// Created by lucas on 16/05/2020.
-//
-
 #include <iostream>
 #include <tgmath.h>
 #include "Collisions.h"
@@ -110,22 +106,18 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container, Collisi
 }
 
 void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan, CollisionSettings *collisionSettings) {
-    Vector2 normalVecteur = plan->getNormal();
-    Vector2 vecteur = plan->getPosition() - pBarrel->getPosition();
-    double delta = vecteur.getX() * normalVecteur.getX() + vecteur.getY() * normalVecteur.getY();
-    normalVecteur.display();
-//    std::cout << delta << std::endl;
-
+    Vector2 normalVector = plan->getNormal();
+    Vector2 vecteur = pBarrel->getPosition() - plan->getPosition();
+    //vecteur.display();
+    double delta = vecteur.getX() * normalVector.getX() + vecteur.getY() * normalVector.getY() - pBarrel->getRadius();
+    //std::cout << delta << std::endl;
     if (delta < 0) {
-
-        Vector2 normalVector = normalVecteur;
-
-        double vy = pBarrel->getVy();
-        double vx = pBarrel->getVx();
+        //TODO Ajouter rotation
+        double vx = pBarrel->getVx() + pBarrel->getRadius() * pBarrel->getOmega() * normalVector.getY();
+        double vy = pBarrel->getVy() - pBarrel->getRadius() * pBarrel->getOmega() * normalVector.getX();
 
         Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
-                               velocityAtContactPoint.getY() * normalVector.getY());
+        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector);
         Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
         Vector2 tangentVector(0);
         if (tangentVelocity.getNorm() != 0.) {
@@ -134,53 +126,29 @@ void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan, Collision
 
         //contact forces and torque
         double effectiveMass = pBarrel->getMass();
-        double eta = -2. * log(collisionSettings->getE()) * sqrt(effectiveMass * collisionSettings->getKn() /
-                                                                 (pow(log(collisionSettings->getE()), 2) +
-                                                                  pow(M_PI, 2)));
+        double eta = collisionSettings->getEta(effectiveMass);
         double normalForceNorm = -1. * (collisionSettings->getKn() * delta) + (eta * normalVelocity.getNorm());
         double tangentForceNorm = -collisionSettings->getKt() * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), (tangentForceNorm * tangentVector.getY()));
+        Vector2 tangentForce(tangentForceNorm * tangentVector);
 
         if (normalForceNorm > 0) {
             pBarrel->addForce(normalForceNorm * normalVector);
-//         std::cout << (normalForceNorm * normalVector).getX() << "" << (normalForceNorm * normalVector).getY() << " N" << std::endl;
+//         std::cout << (normalForceNorm * normalVector).getX() << " " << (normalForceNorm * normalVector).getY() << " N" << std::endl;
         } else {
             normalForceNorm = 0.;
         }
 
         if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
-            pBarrel->addForce(-1 * collisionSettings->getMu() * normalForceNorm * tangentVector);
-            std::cout << "adding force" << std::endl;
-        } else {
-            pBarrel->addForce(tangentForce);
+            tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
         }
+        pBarrel->addForce(tangentForce);
+
         Vector2 forceVector = pBarrel->getForce();
-//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
-
-
-//CE QUE J AI AJOUTE
-        // check if normal force is repulsive
-        if (normalForceNorm > 0) {
-            Vector2 normalForce(tangentForceNorm * normalVector);
-            pBarrel->addForce(normalForce);
-        } else {
-            double fn = 0.;
-        }
-
-
-        if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
-//            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
-//            fty = -mu * fn * ty;
-            pBarrel->addForce(Vector2(0));
-            pBarrel->addForce(-1. * Vector2(0));
-        } else {
-            pBarrel->addForce(Vector2(0));
-        }
-//JUSQUICI
+        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
 
         //torque
-        double M = (-1 * pBarrel->getRadius() * normalVector.getX() * tangentForce.getY())
-                   + (pBarrel->getRadius() * normalVector.getY() * tangentForce.getX());
+        double M = -1. * pBarrel->getRadius() *
+                   (normalVector.getX() * tangentForce.getY() - normalVector.getY() * tangentForce.getX());
 //        std::cout << M << std::endl;
 
         pBarrel->addMomentum(M);
