@@ -38,13 +38,13 @@ int main(int argc, char **argv) {
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
-    int paletteGrains = 30;
+    int paletteGrains = 0;
     int nPalettes = 3;
     int totalPalettesGrains = nPalettes * paletteGrains;
     double paletteRelativeWidth = .3;
     double paletteGrainRadius = .01;
 
-    int numberOfGrains = 1;
+    int numberOfGrains = 6;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
     double radius = 0.015;
     double mass;
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     //container
     double containerRadius = .3;
     double containerOmega = .6 * M_PI;
-//    containerOmega = 0.;
+    containerOmega = 0.;
     Vector2 containerCenter(containerRadius);
     Container container(containerRadius, containerCenter, containerOmega);
 
@@ -92,13 +92,14 @@ int main(int argc, char **argv) {
 
     while (numberOfPlacedGrains < numberOfGrainsWithPalettes) {
         radius = fabs(radiusDistribution(gen));
+//        radius = radiusMean;
         newPos:
         //We choose a random direction and a random radius
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius = (double) sqrt(uniformRealDistribution(gen)) * (containerRadius - 2. * radius) *
                               .95;
         Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-//        randomPosition.setComponents( (-.2)+(.2*numberOfPlacedGrains),0);
+//        randomPosition.setComponents( (-.1)+(.2*numberOfPlacedGrains),0);
 //        randomPosition.setComponents(0.,0.);
         randomPosition = randomPosition + containerCenter;
         for (i = 0; i < numberOfPlacedGrains; i++) {
@@ -124,7 +125,8 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
-//    cellSize = domain.getX()/6.;
+    cellSize = 8. * radiusMean;
+//    cellSize = domain.getX()/1.;
     int nCellX = (int) (domain.getX() / cellSize);
     int nCellY = (int) (domain.getY() / cellSize);
     int nCell = nCellX * nCellY;
@@ -198,7 +200,6 @@ int main(int argc, char **argv) {
                 std::cout << "Out of domain limits" << std::endl;
                 exit(1);
             }
-
             grains[i].setLinkedCell(cellIndex);
             hol = cells[cellIndex].getHeadOfList();
             grains[i].setLinkedDisk(hol);
@@ -216,8 +217,7 @@ int main(int argc, char **argv) {
             cellIndex = grains[i].linkedCell();
             j = cells[cellIndex].getHeadOfList();
             while (j != -9) {
-                //WHY ?
-                if (true || i < j) {
+                if (i < j) {
                     if (i >= totalPalettesGrains || j >= totalPalettesGrains) {
                         computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
                     }
@@ -231,8 +231,11 @@ int main(int argc, char **argv) {
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
                 while (j != -9) {
-                    if (i >= totalPalettesGrains || j >= totalPalettesGrains) {
-                        computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                    //NOTE I ADDED THIS
+                    if (i < j) {
+                        if (i >= totalPalettesGrains || j >= totalPalettesGrains) {
+                            computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                        }
                     }
                     j = grains[j].linkedDisk();
                 }

@@ -9,7 +9,6 @@
 
 void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings *collisionSettings) {
     double delta = getDistanceBetweenGrains(*pGrain1, *pGrain2);
-
     if (delta < 0) {
         Vector2 normalVector = (pGrain1->getPosition() - pGrain2->getPosition()).normalize();
         double vx = pGrain1->getVx() - pGrain2->getVx()
@@ -21,9 +20,9 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
 
         Vector2 velocityAtContactPoint(vx, vy);
 
-        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector).getNorm() * normalVector;
+        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector);
         Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
-        Vector2 tangentVector(0);
+        Vector2 tangentVector(0.);
         if (tangentVelocity.getNorm() != 0.) {
             tangentVector = tangentVelocity.normalize();
         }
@@ -42,7 +41,6 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
         } else {
             normalForceNorm = 0.;
         }
-
 
         if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
             tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
@@ -75,7 +73,7 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container, Collisi
         double vy = pGrain1->getVy() - containerSpeedVector.getY() - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX();
 
         Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint,normalVector).getNorm() * normalVector;
+        Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint,normalVector);
         Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
         Vector2 tangentVector(0);
         if (tangentVelocity.getNorm() != 0.) {
@@ -87,7 +85,7 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container, Collisi
         double normalForceNorm = -1. * ((collisionSettings->getKn() * delta) + (eta * normalVelocity.getNorm()));
         double tangentForceNorm = -1.* collisionSettings->getKt() * tangentVelocity.getNorm();
         Vector2 tangentForce(tangentForceNorm * tangentVector);
-        if (normalForceNorm > 0) {
+        if (normalForceNorm > 0.) {
             pGrain1->addForce(normalForceNorm * normalVector);
         } else {
             normalForceNorm = 0.;
@@ -96,7 +94,6 @@ void computeCollisionWithContainer(Grain *pGrain1, Container *container, Collisi
         if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
             tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
         }
-
         pGrain1->addForce(tangentForce);
         //torque
         double M = pGrain1->getRadius() *
