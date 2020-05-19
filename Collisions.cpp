@@ -112,7 +112,7 @@ void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan, Collision
     double delta = vecteur.getX() * normalVector.getX() + vecteur.getY() * normalVector.getY() - pBarrel->getRadius();
     //std::cout << delta << std::endl;
     if (delta < 0) {
-        //TODO Ajouter rotation
+
         double vx = pBarrel->getVx() + pBarrel->getRadius() * pBarrel->getOmega() * normalVector.getY();
         double vy = pBarrel->getVy() - pBarrel->getRadius() * pBarrel->getOmega() * normalVector.getX();
 
@@ -144,7 +144,7 @@ void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan, Collision
         pBarrel->addForce(tangentForce);
 
         Vector2 forceVector = pBarrel->getForce();
-        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
+//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
 
         //torque
         double M = -1. * pBarrel->getRadius() *

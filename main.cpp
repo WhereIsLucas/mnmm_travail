@@ -39,18 +39,18 @@ int main(int argc, char **argv) {
 
 
     // VIDEO OPTIONS
-    int fps = 50;
+    int fps = 25;
     double tStartCapture = 0.;
-    double totalTime = 2;
+    double totalTime = 4;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
     //TODO make nice constructor
-    GrainPrinter grainPrinter("datas/");
+    GrainPrinter grainPrinter("datas/grain/");
     BarrelPrinter barrelPrinter;
-    barrelPrinter.setPath("datas/");
+    barrelPrinter.setPath("datas/barrel/");
 
 // GRAINS
-    int numberOfGrains = 0;
+    int numberOfGrains = 5;
     double radius = 0.05;
     double mass;
     double rho = 2000.;
@@ -69,16 +69,13 @@ int main(int argc, char **argv) {
                                                               radiusMean + (radiusMean / 2));
 
 
-//container
-    double containerRadius = .3;
-
     int numberOfRevolution = 3;
 
     //plan et domaine
     double alphaDegree = 30;
     double alpha = alphaDegree * M_PI / 180;
 
-    double xDomain = 2. * containerRadius * numberOfRevolution;
+    double xDomain = 4. * barrelRadius * numberOfRevolution;
 
     Vector2 a(0, xDomain * tan(alpha));
     Vector2 b(xDomain, 0);
@@ -86,22 +83,17 @@ int main(int argc, char **argv) {
     plan.initPlanFromCoordinates(a, b);
     plan.printPlanInfos("datas/plan.txt");
 
-    double yDomain = 2. * containerRadius * numberOfRevolution + plan.getPointFromX(0).getY();
+    double yDomain = plan.getPointFromX(0).getY() + barrelRadius;
     Domain domain(xDomain, yDomain);
     domain.printDomainInfos("datas/domain.txt");
 
 
-
-//CONTAINER
-    Vector2 containerCenter = plan.getPointFromX(containerRadius) + Vector2(0, containerRadius);
-    Container container(containerRadius, containerCenter);
-
 //ON place les grains et le barrel
     double xBarrel = barrelRadius - barrelRadius * sin(alpha);
     Vector2 barrelPosition(plan.getPointFromX(xBarrel));
-    double deltaBarrel = barrelPosition.getY() - barrelRadius;
+    double deltaBarrel = barrelPosition.getY() - plan.getPointFromX(barrelRadius).getY();
     barrel.initBarrel(barrelRadius, barrelMass,
-                      plan.getPointFromX(barrelRadius) + Vector2(0, barrelRadius) - Vector2(0, deltaBarrel),
+                      plan.getPointFromX(barrelRadius) + Vector2(0, barrelRadius) + Vector2(0, deltaBarrel),
                       Vector2(0.));
 
     while (numberOfPlacedGrains < numberOfGrains) {
@@ -110,14 +102,13 @@ int main(int argc, char **argv) {
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius =
                 (double) sqrt(uniformRealDistribution(gen)) * (barrelRadius) * .95;//sqrt pour que ce soit uniforme
-        Vector2 randomPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        randomPosition = randomPosition + barrel.getPosition();
-        randomPosition.display();
+        Vector2 grainPosition(randomRadius * cos(direction), randomRadius * sin(direction));
+        grainPosition = grainPosition + barrel.getPosition();
+        grainPosition.display();
 
-
-//        randomPosition.setComponents(0.3-randomRadius, 0);
+//        grainPosition.setComponents(0.3-randomRadius, 0);
         for (i = 0; i < numberOfPlacedGrains; i++) { //Regarder si il n'y a pas d'overlap
-            if (getDistanceBetweenVectors(randomPosition, grains[i].getPosition()) <
+            if (getDistanceBetweenVectors(grainPosition, grains[i].getPosition()) <
                 radius + grains[i].getRadius()) {
                 //BREAK
                 numberOfOverlaps++;
@@ -126,7 +117,7 @@ int main(int argc, char **argv) {
         }
         if (numberOfOverlaps == 0) {
             mass = 4. / 3. * M_PI * pow(radius, 3) * rho;
-            grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, radius, mass, randomPosition, Vector2(0.));
+            grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, radius, mass, grainPosition, Vector2(0.));
             numberOfPlacedGrains++;
         }
     }
@@ -154,8 +145,8 @@ int main(int argc, char **argv) {
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
     Cell *cells = new Cell[nCell];
-//    double dx = (containerRadius * 2.) / nCellX;
-//    double dy = (containerRadius * 2.) / nCellY;
+//    double dx = (barrelRadius * 2.) / nCellX;
+//    double dy = (barrelRadius * 2.) / nCellY;
     std::cout << "Cells values are initialized" << std::endl;
     std::cout << "nCellX " << nCellX << std::endl;
     std::cout << "nCellY " << nCellY << std::endl;
@@ -211,12 +202,13 @@ int main(int argc, char **argv) {
         for (i = 0; i < numberOfGrains; i++) {
 
             grains[i].updatePosition(dt / 2.);
-            cellIndex = (int) (grains[i].getX() / cellSize) +
-                        (int) ((grains[i].getY() / cellSize) * nCellX);
-            grains[i].setLinkedCell(cellIndex);
-            hol = cells[cellIndex].getHeadOfList();
-            grains[i].setLinkedDisk(hol);
-            cells[cellIndex].setHeadOfList(i);
+            //TODO Reparer ca
+//            cellIndex = (int) (grains[i].getX() / cellSize) +
+//                        (int) ((grains[i].getY() / cellSize) * nCellX);
+//            grains[i].setLinkedCell(cellIndex);
+//            hol = cells[cellIndex].getHeadOfList();
+//            grains[i].setLinkedDisk(hol);
+//            cells[cellIndex].setHeadOfList(i);
             grains[i].resetForce();
             grains[i].addGravityForce(Vector2(0, -9.81));
         }
@@ -250,7 +242,7 @@ int main(int argc, char **argv) {
 
             //Collisions with the container
             //computeCollisionWithContainer(&grains[i], &container);
-            computeCollisionWithPlan(&grains[i], &plan);
+//            computeCollisionWithPlan(&grains[i], &plan);
         }
         computeCollisionBetweenBarrelAndPlan(&barrel, &plan, barrelCollisionsSettings);
 
