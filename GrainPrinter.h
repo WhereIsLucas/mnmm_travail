@@ -19,7 +19,10 @@ public:
     void setPath(const std::string path);
 
     void print(Grain grain, int frameNumber);
+    void print(Grain *grains, int size, int frameNumber);
     void clearPrint(int frameNumber);
+    void clearPrints(int frameNumber);
+
 };
 
 

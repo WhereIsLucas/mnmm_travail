@@ -20,7 +20,7 @@ totalFrames = num_files - 1
 energy = []
 potentialEnergy = []
 kineticEnergy = []
-kineticEnergyRot = []
+
 for i in range(0, totalFrames):
     fileName = path + "grain" + str(i) + ".txt"
     data = np.genfromtxt(fileName,
@@ -33,25 +33,29 @@ for i in range(0, totalFrames):
     kineticEnergyRotTot = 0
     if data.size > 1:
         for j in range(0, data.size):
-            mass = math.pi * pow(data[j]['radius'],2)
-            potentialEnergyTot += data[j]['y'] * mass * 9.81
-            eTotal += potentialEnergyTot
-            kineticEnergyTot += .5 * mass * (data[j]['vx'] * data[j]['vx'] + data[j]['vy'] * data[j]['vy'])
-            eTotal += kineticEnergyTot
-            kineticEnergyRotTot += .5 * .5 * mass * pow(data[j]['radius'], 2) * pow(data[j]['omega'], 2)
-            eTotal += kineticEnergyRotTot
+            mass = math.pi * pow(data[j]['radius'], 2)
+            potentialEnergyValue = data[j]['y'] * mass * 9.81
+            kineticEnergyValue = .5 * mass * (data[j]['vx'] * data[j]['vx'] + data[j]['vy'] * data[j]['vy'])
+            kineticEnergyRotValue = .5 * .5 * mass * pow(data[j]['radius'], 2) * pow(data[j]['omega'], 2)
+
+            eTotal += potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
+            potentialEnergyTot += potentialEnergyValue
+            kineticEnergyTot += kineticEnergyValue
+            kineticEnergyRotTot += kineticEnergyRotValue
     else:
         mass = math.pi * data['radius'] * data['radius']
-        potentialEnergyTot += data['y'] * mass * 9.81
-        eTotal += potentialEnergyTot
-        kineticEnergyTot += .5 * mass * (data['vx'] * data['vx'] + data['vy'] * data['vy'])
-        eTotal += kineticEnergyTot
-        kineticEnergyRotTot += .5 * .5 * mass * pow(data['radius'], 2) * pow(data['omega'], 2)
-        eTotal += kineticEnergyRotTot
+        potentialEnergyValue = data['y'] * mass * 9.81
+        kineticEnergyValue = .5 * mass * (data['vx'] * data['vx'] + data['vy'] * data['vy'])
+        kineticEnergyRotValue = .5 * .5 * mass * pow(data['radius'], 2) * pow(data['omega'], 2)
+
+        eTotal += potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
+        potentialEnergyTot += potentialEnergyValue
+        kineticEnergyTot += kineticEnergyValue
+        kineticEnergyRotTot += kineticEnergyRotValue
+
     energy.insert(i, eTotal)
     potentialEnergy.insert(i, potentialEnergyTot)
     kineticEnergy.insert(i, kineticEnergyRotTot + kineticEnergyTot)
-    # kineticEnergyRot.insert(i, kineticEnergyRotTot + kineticEnergyTot)
 
 plt.xlabel('x')
 plt.ylabel('y')

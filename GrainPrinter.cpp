@@ -11,6 +11,12 @@ void GrainPrinter::print(Grain grain, int frameNumber) {
     file.close();
 }
 
+void GrainPrinter::print(Grain *grains, int size, int frameNumber) {
+    for (int i = 0; i < size; ++i) {
+        print(grains[i], frameNumber);
+    }
+}
+
 const std::string &GrainPrinter::getPath() const {
     return path;
 }
@@ -26,4 +32,10 @@ void GrainPrinter::clearPrint(int frameNumber) {
 
 GrainPrinter::GrainPrinter(const std::string &path) : path(path) {
     GrainPrinter::path = path;
+}
+
+void GrainPrinter::clearPrints(int frameNumber) {
+    for (int l = 0; l <= frameNumber; l++) {
+        GrainPrinter::clearPrint(l);
+    }
 }
