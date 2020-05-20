@@ -13,7 +13,7 @@ writer = Writer(fps=25, metadata=dict(artist='Lucas H'), bitrate=1800)
 fig = plt.figure(figsize=(7, 7))
 
 # this counts the number of frames
-path = "./cmake-build-debug/datas/"
+path = "./cmake-build-debug/datas/grain/"
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
 totalFrames = num_files - 1

@@ -15,6 +15,8 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
 
 void computeCollisionWithContainer(Grain *pGrain1, Container *container, CollisionSettings *collisionSettings);
 
+void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Barrel *pBarrel, CollisionSettings *collisionSettings);
+
 void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan, CollisionSettings *collisionSettings);
 
 

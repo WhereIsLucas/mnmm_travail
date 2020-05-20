@@ -27,7 +27,8 @@ double dt = 10. * 0.000001;
 
 int main(int argc, char **argv) {
     auto grainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
-    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
+    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 100000., 10000000.);
+    auto barrelGrainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
     auto t1 = omp_get_wtime();
 
     std::random_device rd;
@@ -50,10 +51,10 @@ int main(int argc, char **argv) {
     barrelPrinter.setPath("datas/barrel/");
 
 // GRAINS
-    int numberOfGrains = 5;
-    double radius = 0.05;
+    int numberOfGrains = 200;
+    double radius = 0.005;
     double mass;
-    double rho = 2000.;
+    double rho = 6000.;
     auto *grains = new Grain[numberOfGrains];
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
@@ -240,8 +241,8 @@ int main(int argc, char **argv) {
                 }
             }
 
-            //Collisions with the container
-            //computeCollisionWithContainer(&grains[i], &container);
+            //Collisions with the barrel
+            computeCollusionBetweenGrainAndBarrel(&grains[i], &barrel, barrelGrainCollisionsSettings);
 //            computeCollisionWithPlan(&grains[i], &plan);
         }
         computeCollisionBetweenBarrelAndPlan(&barrel, &plan, barrelCollisionsSettings);

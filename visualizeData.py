@@ -31,7 +31,7 @@ for i in range(0, totalFrames):
                                  dtype=barrelTypes,
                                  names=['x', 'y', 'vx', 'vy', 'theta', 'radius']))
 showingFrame = 0
-scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius'] * 2.8 * 1000,
+scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius'] * 2.4 * 1000,
                    facecolors="none", edgecolors="red")
 
 # Grain
@@ -47,7 +47,7 @@ for i in range(0, totalFrames):
 showingFrame = 0
 scatGrain = plt.scatter(dataGrain[showingFrame]["x"], dataGrain[showingFrame]['y'], alpha=0.5,
                         s=dataGrain[0]['radius'] * 2.8 * 100,
-                        facecolors="none", edgecolors="red")
+                        facecolors="none", edgecolors="blue")
 
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
