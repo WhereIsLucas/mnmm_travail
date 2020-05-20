@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 
     int i, j, k;
     // COLLISIONS SETTINGS
+    // dt est lié à
     auto containerCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
     auto grainCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
 
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
     double paletteRelativeWidth = .3;
     double paletteGrainRadius = .01;
 
-    int numberOfGrains = 6;
+    int numberOfGrains = 30;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
     double radius = 0.015;
     double mass;
@@ -61,14 +62,13 @@ int main(int argc, char **argv) {
     //container
     double containerRadius = .3;
     double containerOmega = .6 * M_PI;
-    containerOmega = 0.;
+//    containerOmega = 0.;
     Vector2 containerCenter(containerRadius);
     Container container(containerRadius, containerCenter, containerOmega);
 
-
     //DOMAIN
-    double xDomain = 2. * containerRadius * 1.2;
-    double yDomain = 2. * containerRadius * 1.2;
+    double xDomain = 2. * containerRadius;
+    double yDomain = 2. * containerRadius;
     Domain domain(xDomain, yDomain);
     domain.printDomainInfos("datas/domain.txt");
 
@@ -125,8 +125,9 @@ int main(int argc, char **argv) {
 
     //linked cells
     double cellSize = 2.2 * radiusMean;
-    cellSize = 8. * radiusMean;
-//    cellSize = domain.getX()/1.;
+//    cellSize = 8. * radiusMean;
+//    cellSize = domain.getX()/2.;
+    std::cout <<  cellSize << std::endl;
     int nCellX = (int) (domain.getX() / cellSize);
     int nCellY = (int) (domain.getY() / cellSize);
     int nCell = nCellX * nCellY;
@@ -142,6 +143,7 @@ int main(int argc, char **argv) {
         cells[i].initCell(i);
         iy = i / nCellX;
         ix = i % nCellX;
+
         if (ix > 0) { //if not first on the column
             cells[i].addNeighbor(ix + (iy * nCellX) - 1);
         }
@@ -167,7 +169,6 @@ int main(int argc, char **argv) {
             }
         }
     }
-
     std::cout << "Cells are positioned" << std::endl;
     //variables
     int cellIndex, hol;
@@ -189,12 +190,11 @@ int main(int argc, char **argv) {
 
         //loop on grains
         for (i = 0; i < numberOfGrainsWithPalettes; i++) {
-
             /* Leap frog step 1 */
             grains[i].updatePosition(dt / 2.);
-
-            cellIndex = (int) (grains[i].getX() / cellSize) +
-                        (int) ((grains[i].getY() / cellSize) * nCellX);
+            int cellX = (int) (grains[i].getX() / cellSize);
+            int cellY = (int) (grains[i].getY() / cellSize);
+            cellIndex =  (cellX +  cellY * nCellX);
             if (abs(cellIndex) > nCell - 1) {
                 grains[i].getPosition().display();
                 std::cout << "Out of domain limits" << std::endl;
@@ -204,7 +204,8 @@ int main(int argc, char **argv) {
             hol = cells[cellIndex].getHeadOfList();
             grains[i].setLinkedDisk(hol);
             cells[cellIndex].setHeadOfList(i);
-
+//            grains[i].getPosition().display();
+//            std::cout <<  grains[i].linkedCell()+1 << std::endl;
             grains[i].resetForce();
             grains[i].addGravityForce(Vector2(0, -9.81));
         }
@@ -226,12 +227,10 @@ int main(int argc, char **argv) {
             }
 
             // In neighbor cells
-            nNeighbors = cells[cellIndex].numberOfNeighbors();
-            for (k = 0; k < nNeighbors; k++) {
+            for (k = 0; k < cells[cellIndex].numberOfNeighbors(); k++) {
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
                 while (j != -9) {
-                    //NOTE I ADDED THIS
                     if (i < j) {
                         if (i >= totalPalettesGrains || j >= totalPalettesGrains) {
                             computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
@@ -292,7 +291,6 @@ int main(int argc, char **argv) {
 
     printf("Work took %f seconds", t2 - t1);
     return 0;
-
 }
 
 
