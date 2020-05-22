@@ -45,9 +45,9 @@ int main(int argc, char **argv) {
     double paletteRelativeWidth = .3;
     double paletteGrainRadius = .01;
 
-    int numberOfGrains = 30;
+    int numberOfGrains = 100;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
-    double radius = 0.015;
+    double radius = 0.010;
     double mass;
     double rho = 2000.;
     auto *grains = new Grain[numberOfGrainsWithPalettes];
