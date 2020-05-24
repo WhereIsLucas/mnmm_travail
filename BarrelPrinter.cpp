@@ -28,3 +28,7 @@ void BarrelPrinter::clearPrint(int frameNumber) {
     remove(fileName.c_str());
 }
 
+
+BarrelPrinter::BarrelPrinter(const std::string &path) : path(path) {
+    BarrelPrinter::path = path;
+}

@@ -14,52 +14,40 @@
 #include "Collisions.h"
 #include <chrono>
 
-void computeCollisionWithPlan(Grain *pGrain1, Plan *pplan);
-
-// CONTACT PARAMETERS
-double e = 0.99;
-double mu = 0.1;
-double kn = 1000.;
-double kt = 100000.;
-double dt = 10. * 0.000001;
-
-
-
 int main(int argc, char **argv) {
-    auto grainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
-    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 100000., 10000000.);
-    auto barrelGrainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
+    double dt = 10. * 0.000001;
     auto t1 = omp_get_wtime();
-
     std::random_device rd;
     std::mt19937 gen(rd());
-
     std::uniform_real_distribution<double> uniformRealDistribution(0, 1);
-
     int i, j, k;
+
+    //Collisions Settings
+    auto grainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
+    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 100000., 10000000.);
+    auto barrelGrainCollisionsSettings = new CollisionSettings(.9, .6, 10000., 1000000.);
 
 
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
-    double totalTime = 4;
+    double totalTime = 10;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
-    //TODO make nice constructor
+
     GrainPrinter grainPrinter("datas/grain/");
-    BarrelPrinter barrelPrinter;
-    barrelPrinter.setPath("datas/barrel/");
+    BarrelPrinter barrelPrinter("datas/barrel/");
 
 // GRAINS
-    int numberOfGrains = 200;
-    double radius = 0.005;
-    double mass;
-    double rho = 6000.;
+    int numberOfGrains = 20;
+    double radius = 0.05;
+    double mass; //Define later
+    double rho = 3000.;
     auto *grains = new Grain[numberOfGrains];
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
 
-    //Barrel
+// BARREL
     double barrelRadius = 1.;
     double barrelMass = 0.1;
     Barrel barrel;
@@ -69,23 +57,33 @@ int main(int argc, char **argv) {
     std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 2),
                                                               radiusMean + (radiusMean / 2));
 
+//plan et domaine
+    int numberOfRevolution = 4;  //Nbr de révoluton du barrel sur le plan
 
-    int numberOfRevolution = 3;
-
-    //plan et domaine
-    double alphaDegree = 30;
+    double alphaDegree = 30; //Angle d'inclinaison du plan
     double alpha = alphaDegree * M_PI / 180;
 
     double xDomain = 4. * barrelRadius * numberOfRevolution;
 
     Vector2 a(0, xDomain * tan(alpha));
     Vector2 b(xDomain, 0);
+
     Plan plan;
     plan.initPlanFromCoordinates(a, b);
     plan.printPlanInfos("datas/plan.txt");
 
-    double yDomain = plan.getPointFromX(0).getY() + barrelRadius;
+    double yDomain = plan.getPointFromX(0).getY() + 2. * barrelRadius;
+
+    //Plan 2 pour stopper le tonneau
+    Vector2 c(xDomain, 0);
+    Vector2 d(xDomain + 1, yDomain);
+    Plan plan2;
+    plan2.initPlanFromCoordinates(c, d);
+    plan.printPlanInfos("datas/plan2.txt");
+
+    //Définition du domaine et impression pour le code python
     Domain domain(xDomain, yDomain);
+    std::cout << xDomain << " " << yDomain << std::endl;
     domain.printDomainInfos("datas/domain.txt");
 
 
@@ -102,10 +100,9 @@ int main(int argc, char **argv) {
         numberOfOverlaps = 0;
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius =
-                (double) sqrt(uniformRealDistribution(gen)) * (barrelRadius) * .95;//sqrt pour que ce soit uniforme
+                (double) sqrt(uniformRealDistribution(gen)) * (barrelRadius) * .90;//sqrt pour que ce soit uniforme
         Vector2 grainPosition(randomRadius * cos(direction), randomRadius * sin(direction));
         grainPosition = grainPosition + barrel.getPosition();
-        grainPosition.display();
 
 //        grainPosition.setComponents(0.3-randomRadius, 0);
         for (i = 0; i < numberOfPlacedGrains; i++) { //Regarder si il n'y a pas d'overlap
@@ -140,14 +137,12 @@ int main(int argc, char **argv) {
 
 
 //linked cells
-//TODO get max size
-    double cellSize = domain.getX() / 5.;
+    double cellSize = domain.getX() / 10.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);
     int nCell = nCellX * nCellY;
     Cell *cells = new Cell[nCell];
-//    double dx = (barrelRadius * 2.) / nCellX;
-//    double dy = (barrelRadius * 2.) / nCellY;
+
     std::cout << "Cells values are initialized" << std::endl;
     std::cout << "nCellX " << nCellX << std::endl;
     std::cout << "nCellY " << nCellY << std::endl;
@@ -187,9 +182,12 @@ int main(int argc, char **argv) {
     //variables
     int cellIndex, hol;
     int neighborCellIndex, nNeighbors;
-    double t;
-
-    for (t = 0.; t < totalTime; t += dt) {
+    double t = 0.;
+    while (true) {
+        t += dt;
+        if (t > totalTime) {
+            break;
+        }
         /*** refresh and update position***/
 
         // reset linked cells
@@ -201,15 +199,7 @@ int main(int argc, char **argv) {
         //loop on grains
 
         for (i = 0; i < numberOfGrains; i++) {
-
             grains[i].updatePosition(dt / 2.);
-            //TODO Reparer ca
-//            cellIndex = (int) (grains[i].getX() / cellSize) +
-//                        (int) ((grains[i].getY() / cellSize) * nCellX);
-//            grains[i].setLinkedCell(cellIndex);
-//            hol = cells[cellIndex].getHeadOfList();
-//            grains[i].setLinkedDisk(hol);
-//            cells[cellIndex].setHeadOfList(i);
             grains[i].resetForce();
             grains[i].addGravityForce(Vector2(0, -9.81));
         }
@@ -243,9 +233,9 @@ int main(int argc, char **argv) {
 
             //Collisions with the barrel
             computeCollusionBetweenGrainAndBarrel(&grains[i], &barrel, barrelGrainCollisionsSettings);
-//            computeCollisionWithPlan(&grains[i], &plan);
         }
         computeCollisionBetweenBarrelAndPlan(&barrel, &plan, barrelCollisionsSettings);
+        computeCollisionBetweenBarrelAndPlan(&barrel, &plan2, barrelCollisionsSettings);
 
         //update velocity and position
         for (i = 0; i < numberOfGrains; i++) {
@@ -262,7 +252,7 @@ int main(int argc, char **argv) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }
                 barrelPrinter.print(barrel, (int) ((recTime + dt) * fps));
-                std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
+//                std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
             }
         }
     }
@@ -277,84 +267,4 @@ int main(int argc, char **argv) {
     return 0;
 
 }
-
-
-
-void computeCollisionWithPlan(Grain *pGrain1, Plan *plan) {
-    Vector2 normalVecteur = -1 * plan->getNormal();
-    Vector2 vecteur = plan->getPosition() - pGrain1->getPosition();
-    double delta = vecteur.getX() * normalVecteur.getX() + vecteur.getY() * normalVecteur.getY();
-
-
-    if (delta < 0) {
-
-        Vector2 normalVector = normalVecteur;
-
-        double vy = pGrain1->getVy();
-        double vx = pGrain1->getVx();
-
-        Vector2 velocityAtContactPoint(vx, vy);
-        Vector2 normalVelocity(velocityAtContactPoint.getX() * normalVector.getX(),
-                               velocityAtContactPoint.getY() * normalVector.getY());
-        Vector2 tangentVelocity = velocityAtContactPoint - normalVelocity;
-        Vector2 tangentVector(0);
-        if (tangentVelocity.getNorm() != 0.) {
-            tangentVector = tangentVelocity.normalize();
-        }
-
-        //contact forces and torque
-        double effectiveMass = pGrain1->getMass();
-        double eta = -2. * log(e) * sqrt(effectiveMass * kn / (pow(log(e), 2) + pow(M_PI, 2)));
-        double normalForceNorm = -1. * (kn * delta) + (eta * normalVelocity.getNorm());
-        double tangentForceNorm = -kt * tangentVelocity.getNorm();
-        Vector2 tangentForce(tangentForceNorm * tangentVector.getX(), (tangentForceNorm * tangentVector.getY()));
-
-        if (normalForceNorm > 0) {
-            pGrain1->addForce(normalForceNorm * normalVector);
-//         std::cout << (normalForceNorm * normalVector).getX() << "" << (normalForceNorm * normalVector).getY() << " N" << std::endl;
-        } else {
-            normalForceNorm = 0.;
-        }
-
-        if (tangentForce.getNorm() > mu * normalForceNorm) {
-            pGrain1->addForce(-1 * mu * normalForceNorm * tangentVector);
-            std::cout << "adding force" << std::endl;
-        } else {
-            pGrain1->addForce(tangentForce);
-        }
-        Vector2 forceVector = pGrain1->getForce();
-//        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
-
-
-//CE QUE J AI AJOUTE
-        // check if normal force is repulsive
-        if (normalForceNorm > 0) {
-            Vector2 normalForce(tangentForceNorm * normalVector);
-            pGrain1->addForce(normalForce);
-        } else {
-            double fn = 0.;
-        }
-
-
-        if (tangentForce.getNorm() > mu * normalForceNorm) {
-//            ftx = -mu * normalForce.getNorm() * normalizedTangentVelocity();
-//            fty = -mu * fn * ty;
-            pGrain1->addForce(Vector2(0));
-            pGrain1->addForce(-1. * Vector2(0));
-        } else {
-            pGrain1->addForce(Vector2(0));
-        }
-//JUSQUICI
-
-        //torque
-        double M = (-1 * pGrain1->getRadius() * normalVector.getX() * tangentForce.getY())
-                   + (pGrain1->getRadius() * normalVector.getY() * tangentForce.getX());
-//        std::cout << M << std::endl;
-
-        pGrain1->addMomentum(M);
-    }
-
-
-}
-
 

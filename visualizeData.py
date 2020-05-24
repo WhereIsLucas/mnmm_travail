@@ -7,6 +7,7 @@ types = ['float', 'float', 'float', 'float', 'float', 'float', 'float']
 barrelTypes = ['float', 'float', 'float', 'float', 'float', 'float']
 domainTypes = ['float', 'float']
 lineTypes = ['float', 'float']
+lineTypes2 = ['float', 'float']
 data = []
 dataGrain = []
 
@@ -31,7 +32,7 @@ for i in range(0, totalFrames):
                                  dtype=barrelTypes,
                                  names=['x', 'y', 'vx', 'vy', 'theta', 'radius']))
 showingFrame = 0
-scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius'] * 2.4 * 1000,
+scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=data[0]['radius'] * 1.5 * 1000,
                    facecolors="none", edgecolors="red")
 
 # Grain
@@ -46,8 +47,7 @@ for i in range(0, totalFrames):
                                       names=['ID', 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
 showingFrame = 0
 scatGrain = plt.scatter(dataGrain[showingFrame]["x"], dataGrain[showingFrame]['y'], alpha=0.5,
-                        s=dataGrain[0]['radius'] * 2.8 * 100,
-                        facecolors="none", edgecolors="blue")
+                        s=dataGrain[0]['radius'] * 1 * 100, color="blue")
 
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
@@ -71,6 +71,8 @@ plan = np.genfromtxt(pathBase + "plan.txt",
 
 x = np.linspace(-1 * domain["x"], domain['x'] * 2, 100)
 plt.plot(x, (plan["m"] * x) + plan["p"])
+
+plt.axvline(x=domain["x"])
 
 # plt.show()
 plt.savefig("exports/im.png")

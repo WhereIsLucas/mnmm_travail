@@ -12,6 +12,8 @@ class BarrelPrinter {
 private:
     std::string path;
 public:
+    BarrelPrinter(const std::string &path);
+
     const std::string &getPath() const;
 
     void setPath(const std::string path);

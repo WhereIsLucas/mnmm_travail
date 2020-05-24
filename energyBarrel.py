@@ -36,7 +36,7 @@ for i in range(0, totalFrames):
         for j in range(0, data.size):
             potentialEnergyValue = data[j]['y'] * mass * 9.81
             kineticEnergyValue = .5 * mass * (data[j]['vx'] * data[j]['vx'] + data[j]['vy'] * data[j]['vy'])
-            kineticEnergyRotValue = .5 * .5 * mass * pow(data[j]['radius'], 2) * pow(data[j]['theta'], 2)
+            kineticEnergyRotValue = .5 * mass * pow(data[j]['radius'], 2) * pow(data[j]['theta'], 2)
             eTotal += potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
             potentialEnergyTot += potentialEnergyValue
             kineticEnergyTot += kineticEnergyValue
