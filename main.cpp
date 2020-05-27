@@ -22,12 +22,11 @@ int main(int argc, char **argv) {
     std::uniform_real_distribution<double> uniformRealDistribution(0, 1);
     int i, j, k;
 
-    //Collisions Settings
-    auto grainCollisionsSettings = new CollisionSettings(.9, .6, 1000., 1000.);
-    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 100000., 10000000.);
-    auto barrelGrainCollisionsSettings = new CollisionSettings(.9, .6, 10000., 1000000.);
-
-
+    double radius_min;
+    double m_tot = 0;
+    double g = 9.81;
+    double h = 10;
+    double kn = 0;
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
@@ -39,28 +38,30 @@ int main(int argc, char **argv) {
     BarrelPrinter barrelPrinter("datas/barrel/");
 
 // GRAINS
-    int numberOfGrains = 20;
+    int numberOfGrains = 100;
     double radius = 0.05;
+    radius_min = radius;
     double mass; //Define later
-    double rho = 3000.;
+    double rho = 2000.; //masse volumique du sable
     auto *grains = new Grain[numberOfGrains];
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
 
 // BARREL
     double barrelRadius = 1.;
-    double barrelMass = 0.1;
+    double barrelRho = 5000.; //masse volumique du verre
+    double barrelMass = 2. * M_PI + barrelRadius * 0.01 * barrelRho;
     Barrel barrel;
 
 //this setups the getRadius distribution
     double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 2),
-                                                              radiusMean + (radiusMean / 2));
+    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (0.5 * radiusMean),
+                                                              radiusMean + (0.5 * radiusMean));
 
 //plan et domaine
     int numberOfRevolution = 4;  //Nbr de révoluton du barrel sur le plan
 
-    double alphaDegree = 30; //Angle d'inclinaison du plan
+    double alphaDegree = 15; //Angle d'inclinaison du plan
     double alpha = alphaDegree * M_PI / 180;
 
     double xDomain = 4. * barrelRadius * numberOfRevolution;
@@ -97,6 +98,9 @@ int main(int argc, char **argv) {
 
     while (numberOfPlacedGrains < numberOfGrains) {
         radius = fabs(radiusDistribution(gen));
+        if (radius_min > radius) {
+            radius_min = radius;
+        }
         numberOfOverlaps = 0;
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
         double randomRadius =
@@ -115,12 +119,26 @@ int main(int argc, char **argv) {
         }
         if (numberOfOverlaps == 0) {
             mass = 4. / 3. * M_PI * pow(radius, 3) * rho;
+            m_tot += mass;
             grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, radius, mass, grainPosition, Vector2(0.));
             numberOfPlacedGrains++;
         }
     }
+    //Recherche du meilleur kn
 
+    //Collisions Settings
+
+
+    std::cout << "radius min " << radius_min << std::endl;
+    std::cout << "Mass tot " << m_tot << std::endl;
+    double r = radius_min / 100;
+    kn = 2 * m_tot * g * 1 / pow(r, 2);
+    std::cout << " kn " << kn << std::endl;
     std::cout << "Grains and Barrel are placed" << std::endl;
+
+    auto grainCollisionsSettings = new CollisionSettings(.9, .6, 100000, 1000.);
+    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 100000, 10000000.);
+    auto barrelGrainCollisionsSettings = new CollisionSettings(.9, .6, 1000000, 1000000.);
 
 //CLEAR FILES
     for (int l = 0; l <= totalFrames; l++) {
@@ -135,66 +153,14 @@ int main(int argc, char **argv) {
     barrelPrinter.print(barrel, 0);
     std::cout << "Initial state in saved" << std::endl;
 
-
-//linked cells
-    double cellSize = domain.getX() / 10.;
-    int nCellX = (int) ((domain.getX()) / cellSize);
-    int nCellY = (int) ((domain.getY()) / cellSize);
-    int nCell = nCellX * nCellY;
-    Cell *cells = new Cell[nCell];
-
-    std::cout << "Cells values are initialized" << std::endl;
-    std::cout << "nCellX " << nCellX << std::endl;
-    std::cout << "nCellY " << nCellY << std::endl;
-
-    int ix, iy, jx, jy;
-    for (i = 0; i < nCell; i++) {
-        cells[i].initCell(i);
-        iy = i / nCellX;
-        ix = i % nCellX;
-        if (ix > 0) { //if not first on the column
-            cells[i].addNeighbor(ix + (iy * nCellX) - 1);
-        }
-        if (ix < nCellX - 1) { //if not last on the column
-            cells[i].addNeighbor(ix + (iy * nCellX) + 1);
-        }
-        if (iy > 0) { //if not on first line
-            cells[i].addNeighbor(ix + (iy - 1) * nCellX);
-            if (ix > 0) { //if not first on the line
-                cells[i].addNeighbor(ix + (iy - 1) * nCellX - 1);
-            }
-            if (ix < nCellX - 1) { //if not last on the line
-                cells[i].addNeighbor(ix + (iy - 1) * nCellX + 1);
-            }
-        }
-        if (iy < nCellY - 1) { //if not on last line
-            cells[i].addNeighbor(ix + ((iy + 1) * nCellX));
-            if (ix > 0) { //if not first on the line
-                cells[i].addNeighbor(ix + ((iy + 1) * nCellX) - 1);
-            }
-            if (ix < nCellX - 1) { //if not last on the line
-                cells[i].addNeighbor(ix + ((iy + 1) * nCellX) + 1);
-            }
-        }
-    }
-
-    std::cout << "Cells are positioned" << std::endl;
-    //variables
-    int cellIndex, hol;
-    int neighborCellIndex, nNeighbors;
     double t = 0.;
     while (true) {
         t += dt;
+//        std::cout << t << std::endl;
         if (t > totalTime) {
             break;
         }
         /*** refresh and update position***/
-
-        // reset linked cells
-        for (i = 0; i < nCell; i++) {
-            cells[i].setHeadOfList(-9);
-        }
-
 
         //loop on grains
 
@@ -210,27 +176,9 @@ int main(int argc, char **argv) {
 
         /*** contact detection and forces ***/
         for (i = 0; i < numberOfGrains; i++) {
-            // In cell
-            cellIndex = grains[i].linkedCell();
-            j = cells[cellIndex].getHeadOfList();
-            while (j != -9) {
-                if (i < j) {
-                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
-                }
-                j = grains[j].linkedDisk();
+            for (int j = i + 1; j < numberOfGrains; ++j) {
+                computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
             }
-
-            // In neighbor cells
-            nNeighbors = cells[cellIndex].numberOfNeighbors();
-            for (k = 0; k < nNeighbors; k++) {
-                neighborCellIndex = cells[cellIndex].neighbor(k);
-                j = cells[neighborCellIndex].getHeadOfList();
-                while (j != -9) {
-                    computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
-                    j = grains[j].linkedDisk();
-                }
-            }
-
             //Collisions with the barrel
             computeCollusionBetweenGrainAndBarrel(&grains[i], &barrel, barrelGrainCollisionsSettings);
         }
@@ -252,12 +200,11 @@ int main(int argc, char **argv) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }
                 barrelPrinter.print(barrel, (int) ((recTime + dt) * fps));
-//                std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
+                std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
             }
         }
     }
 
-    delete[] cells;
     delete[] grains;
 
     // Recording end time.

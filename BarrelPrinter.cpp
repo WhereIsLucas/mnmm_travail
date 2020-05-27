@@ -19,7 +19,7 @@ void BarrelPrinter::print(Barrel barrel, int frameNumber) {
     file.open(fileName.c_str(), std::ios::app);
     file.precision(10);
     file << barrel.getX() << "," << barrel.getY() << "," << barrel.getVx() << "," << barrel.getVy()
-         << "," << barrel.getTheta() << "," << barrel.getRadius() << std::endl;
+         << "," << barrel.getOmega() << "," << barrel.getRadius() << std::endl;
     file.close();
 }
 

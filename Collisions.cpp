@@ -60,7 +60,6 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
     }
 }
 
-
 void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Barrel *pBarrel, CollisionSettings *collisionSettings) {
     double delta = pBarrel->getRadius() - pGrain1->getRadius() -
                    getDistanceBetweenVectors(pGrain1->getPosition(), pBarrel->getPosition());
@@ -100,6 +99,7 @@ void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Barrel *pBarrel, Coll
                    (-1. * normalVector.getX() * tangentForce.getY()
                     + (normalVector.getY() * tangentForce.getX()));
         pGrain1->addMomentum(M);
+        pBarrel->addMomentum(-1. * M);
         return;
     }
 

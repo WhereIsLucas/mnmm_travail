@@ -22,6 +22,7 @@ energy = []
 potentialEnergy = []
 kineticEnergy = []
 kineticEnergyRot = []
+velocity = []
 for i in range(0, totalFrames):
     fileName = pathBarrel + "barrel" + str(i) + ".txt"
     data = np.genfromtxt(fileName,
@@ -32,6 +33,7 @@ for i in range(0, totalFrames):
     potentialEnergyTot = 0
     kineticEnergyTot = 0
     kineticEnergyRotTot = 0
+    velocityValue = 0
     if data.size > 1:
         for j in range(0, data.size):
             potentialEnergyValue = data[j]['y'] * mass * 9.81
@@ -41,6 +43,7 @@ for i in range(0, totalFrames):
             potentialEnergyTot += potentialEnergyValue
             kineticEnergyTot += kineticEnergyValue
             kineticEnergyRotTot += kineticEnergyRotValue
+            velocityValue = data[j]['vx']
     else:
         mass = math.pi * data['radius'] * data['radius']
         potentialEnergyValue = data['y'] * mass * 9.81
@@ -50,17 +53,25 @@ for i in range(0, totalFrames):
         potentialEnergyTot += potentialEnergyValue
         kineticEnergyTot += kineticEnergyValue
         kineticEnergyRotTot += kineticEnergyRotValue
+        velocityValue = data['vx']
+
     energy.insert(i, eTotal)
     potentialEnergy.insert(i, potentialEnergyTot)
     kineticEnergy.insert(i, kineticEnergyRotTot + kineticEnergyTot)
     kineticEnergyRot.insert(i, kineticEnergyRotTot + kineticEnergyTot)
+    velocity.insert(i, velocityValue)
+#
+# plt.xlabel('x')
+# plt.ylabel('y')
+# plt.plot(energy)
+# plt.plot(potentialEnergy)
+# plt.plot(kineticEnergy)
+# plt.plot(kineticEnergyRot)
+# plt.legend(['energy', 'potentialEnergy', 'totalKineticEnergy', 'RotEnergy'])
+#
+# plt.savefig('exports/energyBarrel.png')
 
 plt.xlabel('x')
 plt.ylabel('y')
-plt.plot(energy)
-plt.plot(potentialEnergy)
-plt.plot(kineticEnergy)
-plt.plot(kineticEnergyRot)
-plt.legend(['energy', 'potentialEnergy', 'totalKineticEnergy', 'RotEnergy'])
-
-plt.savefig('exports/energyBarrel.png')
+plt.plot(velocity)
+plt.savefig('exports/velocityBarrel.png')
