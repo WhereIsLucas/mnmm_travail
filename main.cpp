@@ -76,7 +76,6 @@ int main(int argc, char **argv) {
 
     //Placing the grains for the palettes
 
-    #pragma omp parallel for
     for (int m = 0; m < nPalettes; ++m) {
         double direction = (2. * M_PI / (double) nPalettes) * m;
         double positionRadius = containerRadius;
@@ -142,7 +141,6 @@ int main(int argc, char **argv) {
     std::cout << "nCells " << nCell << std::endl;
 
     int ix, iy;
-    #pragma omp parallel for default (shared)
     for (i = 0; i < nCell; i++) {
         cells[i].initCell(i);
         iy = i / nCellX;
@@ -188,13 +186,11 @@ int main(int argc, char **argv) {
         }
 
         // reset linked cells
-        #pragma omp parallel     
         for (i = 0; i < nCell; i++) {
             cells[i].setHeadOfList(-9);
         }
 
         //loop on grains
-        #pragma omp for
         for (i = 0; i < numberOfGrainsWithPalettes; i++) {
             if(i >= totalPalettesGrains)
             {
@@ -241,7 +237,6 @@ int main(int argc, char **argv) {
             }
 
             // In neighbor cells
-            #pragma omp parallel for
             for (k = 0; k < cells[cellIndex].numberOfNeighbors(); k++) {
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
@@ -267,7 +262,6 @@ int main(int argc, char **argv) {
         }
 
         //update velocity and position for the active grains
-        #pragma omp for
         for (i = totalPalettesGrains; i < numberOfGrainsWithPalettes; i++) {
             grains[i].updateVelocity(dt);
             grains[i].updatePosition(dt / 2.);
