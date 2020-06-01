@@ -23,13 +23,14 @@ for i in range(0, totalFrames):
                                  delimiter=',',
                                  dtype=types,
                                  names=["ID", 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
-showingFrame = 0
-norm = plt.Normalize(0,.5)
-cmap = plt.get_cmap('jet')
+showingFrame = 1
+norm = plt.Normalize(0, 20)
+# cmap = plt.get_cmap('jet')
 # speed =
-velocity = np.square(data[showingFrame]["vy"]) + np.square(data[showingFrame]["vx"])
-scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, s=pow(data[0]['radius'], 2) * 60*10000,
-                   c=velocity, cmap='jet', norm=norm)
+velocity = np.square(data[showingFrame]["vy"]) + np.square(data[showingFrame]["vx"]) + np.divide(
+    np.square(data[showingFrame]["theta"]), 100)
+scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5,
+                   s=pow(data[0]['radius'], 2) * 60 * 10000)
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
 plt.axis("equal")
@@ -45,7 +46,7 @@ plt.xlabel('x')
 plt.ylabel('y')
 # a_circle = plt.Circle((.3, .4), .005)
 # plt.gca().add_artist(a_circle)
-b_circle = plt.Circle((.3, .3), .3, fill=False)
+b_circle = plt.Circle((.33, .33), .3, fill=False)
 plt.gca().add_artist(b_circle)
 
 plt.savefig('exports/test.png')
@@ -53,8 +54,9 @@ plt.savefig('exports/test.png')
 
 def update(frame_number):
     scat.set_offsets(np.c_[data[frame_number]["x"], data[frame_number]["y"]])
-    velocityUpdated = np.square(data[frame_number]["vy"]) + np.square(data[frame_number]["vx"])
-    scat.set_array(np.square(velocityUpdated))
+    # velocityUpdated = np.square(data[frame_number]["vy"]) + np.square(data[frame_number]["vx"]) + np.divide(np.square(
+    #     data[frame_number]["theta"]), 100)
+    # scat.set_array(velocityUpdated)
 
 
 animation = animation.FuncAnimation(fig, update, interval=40, frames=totalFrames)

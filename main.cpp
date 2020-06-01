@@ -9,14 +9,15 @@
 #include "Vector2.h"
 #include "Domain.h"
 #include "collisions.h"
-
+#include "cohesion.h"
+#include "CohesionSettings.h"
 // CONTACT PARAMETERS
 
 
 
 int main(int argc, char **argv) {
     auto t1 = omp_get_wtime();
-
+    std::cout <<  omp_get_max_threads() << std::endl;
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -27,27 +28,27 @@ int main(int argc, char **argv) {
     // dt est lié à
     auto containerCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
     auto grainCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
-
+    CohesionSettings cohesionSettings(.005, .04);
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
-    double totalTime = 5;
+    double totalTime = 10;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
-    double dt = .5 * 0.000001;
+    double dt = 1. * 0.000001;
 
     GrainPrinter grainPrinter("datas/");
 
     // GRAINS
-    int paletteGrains = 0;
+    int paletteGrains = 10;
     int nPalettes = 3;
     int totalPalettesGrains = nPalettes * paletteGrains;
     double paletteRelativeWidth = .3;
-    double paletteGrainRadius = .01;
+    double paletteGrainRadius = 0.004;
 
-    int numberOfGrains = 100;
+    int numberOfGrains = 120;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
-    double radius = 0.010;
+    double radius = 0.005;
     double mass;
     double rho = 2000.;
     auto *grains = new Grain[numberOfGrainsWithPalettes];
@@ -55,20 +56,20 @@ int main(int argc, char **argv) {
 
     //this setups the getRadius distribution
     double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 3),
-                                                              radiusMean + (radiusMean / 3));
+    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 3.),
+                                                              radiusMean + (radiusMean / 3.));
 
 
     //container
     double containerRadius = .3;
-    double containerOmega = .6 * M_PI;
+    double containerOmega =  .2*M_PI;
 //    containerOmega = 0.;
-    Vector2 containerCenter(containerRadius);
+    Vector2 containerCenter(containerRadius*1.1);
     Container container(containerRadius, containerCenter, containerOmega);
 
     //DOMAIN
-    double xDomain = 2. * containerRadius;
-    double yDomain = 2. * containerRadius;
+    double xDomain = 2.2 * containerRadius;
+    double yDomain = 2.2 * containerRadius;
     Domain domain(xDomain, yDomain);
     domain.printDomainInfos("datas/domain.txt");
 
@@ -126,8 +127,8 @@ int main(int argc, char **argv) {
     //linked cells
     double cellSize = 2.2 * radiusMean;
 //    cellSize = 8. * radiusMean;
-//    cellSize = domain.getX()/2.;
-    std::cout <<  cellSize << std::endl;
+//    cellSize = domain.getX()/1.;
+    std::cout << cellSize << std::endl;
     int nCellX = (int) (domain.getX() / cellSize);
     int nCellY = (int) (domain.getY() / cellSize);
     int nCell = nCellX * nCellY;
@@ -139,6 +140,7 @@ int main(int argc, char **argv) {
     std::cout << "nCells " << nCell << std::endl;
 
     int ix, iy;
+    #pragma omp parallel for default (shared)
     for (i = 0; i < nCell; i++) {
         cells[i].initCell(i);
         iy = i / nCellX;
@@ -190,12 +192,21 @@ int main(int argc, char **argv) {
 
         //loop on grains
         for (i = 0; i < numberOfGrainsWithPalettes; i++) {
+            if(i >= totalPalettesGrains)
+            {
+                grains[i].updatePosition(dt / 2.);
+            }
+            grains[i].resetForce();
+            grains[i].addGravityForce(Vector2(0, -9.81));
+        }
+
+        for (i = 0; i < numberOfGrainsWithPalettes; i++) {
             /* Leap frog step 1 */
-            grains[i].updatePosition(dt / 2.);
             int cellX = (int) (grains[i].getX() / cellSize);
             int cellY = (int) (grains[i].getY() / cellSize);
-            cellIndex =  (cellX +  cellY * nCellX);
+            cellIndex = cellX + (cellY * nCellX);
             if (abs(cellIndex) > nCell - 1) {
+                std::cout <<  cellIndex << std::endl;
                 grains[i].getPosition().display();
                 std::cout << "Out of domain limits" << std::endl;
                 exit(1);
@@ -204,10 +215,6 @@ int main(int argc, char **argv) {
             hol = cells[cellIndex].getHeadOfList();
             grains[i].setLinkedDisk(hol);
             cells[cellIndex].setHeadOfList(i);
-//            grains[i].getPosition().display();
-//            std::cout <<  grains[i].linkedCell()+1 << std::endl;
-            grains[i].resetForce();
-            grains[i].addGravityForce(Vector2(0, -9.81));
         }
 
 
@@ -221,6 +228,10 @@ int main(int argc, char **argv) {
                 if (i < j) {
                     if (i >= totalPalettesGrains || j >= totalPalettesGrains) {
                         computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                        if (i >= totalPalettesGrains && j >= totalPalettesGrains)
+                        {
+                            addCohesionForce(&grains[i], &grains[j], cohesionSettings);
+                        }
                     }
                 }
                 j = grains[j].linkedDisk();
@@ -234,6 +245,10 @@ int main(int argc, char **argv) {
                     if (i < j) {
                         if (i >= totalPalettesGrains || j >= totalPalettesGrains) {
                             computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionSettings);
+                            if (i >= totalPalettesGrains && j >= totalPalettesGrains)
+                            {
+                                addCohesionForce(&grains[i], &grains[j], cohesionSettings);
+                            }
                         }
                     }
                     j = grains[j].linkedDisk();
@@ -273,7 +288,7 @@ int main(int argc, char **argv) {
         recTime = t - tStartCapture;
         if (recTime >= 0.) {
             if ((int) ((recTime + dt) * fps) > (int) (recTime * fps)) {
-                grainPrinter.print(grains,numberOfGrainsWithPalettes, (int) ((recTime + dt) * fps));
+                grainPrinter.print(grains, numberOfGrainsWithPalettes, (int) ((recTime + dt) * fps));
                 auto t2_image = omp_get_wtime();
                 std::cout << "printing image " << (int) ((recTime + dt) * fps) << " | " << t2_image - t1_image
                           << " seconds" << std::endl;
