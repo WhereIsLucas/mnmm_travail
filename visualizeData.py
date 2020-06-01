@@ -12,12 +12,12 @@ writer = animation.FFMpegWriter(fps=25, metadata=dict(artist='Lucas H'), bitrate
 fig = plt.figure(figsize=(7, 7))
 
 # this counts the number of frames
-path = os.path.join("out","x64-Release","datas")
+path = os.path.join("cmake-build-debug","datas")
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
 totalFrames = num_files - 1
 for i in range(0, totalFrames):
-    fileName = path + "grain" + str(i) + ".txt"
+    fileName = os.path.join(path,"grain" + str(i) + ".txt")
     data.insert(i, np.genfromtxt(fileName,
                                  delimiter=',',
                                  dtype=types,

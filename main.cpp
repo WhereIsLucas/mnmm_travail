@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
-    double totalTime = 10;
+    double totalTime = 20;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
     double dt = 10. * 0.000001;
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     double paletteRelativeWidth = .3;
     double paletteGrainRadius = 0.004;
 
-    int numberOfGrains = 120;
+    int numberOfGrains = 1400;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
     double radius = 0.005;
     double mass;
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     //container
     double containerRadius = .3;
-    double containerOmega =  .2*M_PI;
+    double containerOmega =  M_PI;
 //    containerOmega = 0.;
     Vector2 containerCenter(containerRadius*1.1);
     Container container(containerRadius, containerCenter, containerOmega);
