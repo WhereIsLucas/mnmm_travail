@@ -8,12 +8,11 @@ domainTypes = ['float', 'float']
 data = []
 
 # Set up the codec for the video file
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=25, metadata=dict(artist='Lucas H'), bitrate=1800)
+writer = animation.FFMpegWriter(fps=25, metadata=dict(artist='Lucas H'), bitrate=1800)
 fig = plt.figure(figsize=(7, 7))
 
 # this counts the number of frames
-path = "./cmake-build-debug/datas/"
+path = os.path.join("out","x64-Release","datas")
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
 totalFrames = num_files - 1

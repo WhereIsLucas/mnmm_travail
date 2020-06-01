@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <iostream>
 #include <random>
 #include <omp.h>
@@ -11,8 +14,6 @@
 #include "collisions.h"
 #include "cohesion.h"
 #include "CohesionSettings.h"
-// CONTACT PARAMETERS
-
 
 
 int main(int argc, char **argv) {
@@ -35,7 +36,7 @@ int main(int argc, char **argv) {
     double totalTime = 10;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
-    double dt = 1. * 0.000001;
+    double dt = 10. * 0.000001;
 
     GrainPrinter grainPrinter("datas/");
 
@@ -75,6 +76,7 @@ int main(int argc, char **argv) {
 
     //Placing the grains for the palettes
 
+    #pragma omp parallel for
     for (int m = 0; m < nPalettes; ++m) {
         double direction = (2. * M_PI / (double) nPalettes) * m;
         double positionRadius = containerRadius;
@@ -174,7 +176,7 @@ int main(int argc, char **argv) {
     std::cout << "Cells are positioned" << std::endl;
     //variables
     int cellIndex, hol;
-    int neighborCellIndex, nNeighbors;
+    int neighborCellIndex;
     double t = 0.;
     auto t1_image = omp_get_wtime();
     int iteration = 0;
@@ -186,11 +188,13 @@ int main(int argc, char **argv) {
         }
 
         // reset linked cells
+        #pragma omp parallel     
         for (i = 0; i < nCell; i++) {
             cells[i].setHeadOfList(-9);
         }
 
         //loop on grains
+        #pragma omp for
         for (i = 0; i < numberOfGrainsWithPalettes; i++) {
             if(i >= totalPalettesGrains)
             {
@@ -201,7 +205,6 @@ int main(int argc, char **argv) {
         }
 
         for (i = 0; i < numberOfGrainsWithPalettes; i++) {
-            /* Leap frog step 1 */
             int cellX = (int) (grains[i].getX() / cellSize);
             int cellY = (int) (grains[i].getY() / cellSize);
             cellIndex = cellX + (cellY * nCellX);
@@ -238,6 +241,7 @@ int main(int argc, char **argv) {
             }
 
             // In neighbor cells
+            #pragma omp parallel for
             for (k = 0; k < cells[cellIndex].numberOfNeighbors(); k++) {
                 neighborCellIndex = cells[cellIndex].neighbor(k);
                 j = cells[neighborCellIndex].getHeadOfList();
@@ -263,6 +267,7 @@ int main(int argc, char **argv) {
         }
 
         //update velocity and position for the active grains
+        #pragma omp for
         for (i = totalPalettesGrains; i < numberOfGrainsWithPalettes; i++) {
             grains[i].updateVelocity(dt);
             grains[i].updatePosition(dt / 2.);
