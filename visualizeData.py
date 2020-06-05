@@ -6,9 +6,11 @@ import numpy as np
 types = ['float', 'float', 'float', 'float', 'float', 'float', 'float']
 barrelTypes = ['float', 'float', 'float', 'float', 'float', 'float']
 domainTypes = ['float', 'float']
+infosTypes = ['string', 'string', 'string']
 lineTypes = ['float', 'float']
 lineTypes2 = ['float', 'float']
 data = []
+dataInfos = []
 dataGrain = []
 
 # Set up the codec for the video file
@@ -38,16 +40,17 @@ scat = plt.scatter(data[showingFrame]["x"], data[showingFrame]['y'], alpha=0.5, 
 # Grain
 num_files = len([f for f in os.listdir(pathGrain) if os.path.isfile(os.path.join(pathGrain, f))])
 print(num_files)
-totalFrames = num_files
-for i in range(0, totalFrames):
-    fileName = pathGrain + "grain" + str(i) + ".txt"
-    dataGrain.insert(i, np.genfromtxt(fileName,
-                                      delimiter=',',
-                                      dtype=types,
-                                      names=['ID', 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
-showingFrame = 0
-scatGrain = plt.scatter(dataGrain[showingFrame]["x"], dataGrain[showingFrame]['y'], alpha=0.5,
-                        s=dataGrain[0]['radius'] * 1 * 100, color="blue")
+totalFramesGrains = num_files
+if totalFramesGrains > 0:
+    for i in range(0, totalFrames):
+        fileName = pathGrain + "grain" + str(i) + ".txt"
+        dataGrain.insert(i, np.genfromtxt(fileName,
+                                          delimiter=',',
+                                          dtype=types,
+                                          names=['ID', 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
+    showingFrame = 0
+    scatGrain = plt.scatter(dataGrain[showingFrame]["x"], dataGrain[showingFrame]['y'], alpha=0.5,
+                            s=dataGrain[0]['radius'] * 1 * 100, color="blue")
 
 plt.title('Scatter plot test')
 # plt.gca().set_aspect('equal', adjustable='box')
@@ -81,9 +84,19 @@ plt.savefig("exports/im.png")
 #
 def update(frame_number):
     scat.set_offsets(np.c_[data[frame_number]["x"], data[frame_number]["y"]])
-    scatGrain.set_offsets(np.c_[dataGrain[frame_number]["x"], dataGrain[frame_number]["y"]])
+    if totalFramesGrains > 0:
+        scatGrain.set_offsets(np.c_[dataGrain[frame_number]["x"], dataGrain[frame_number]["y"]])
+
+
+# infos
+# fileName = pathBase + "infos.txt"
+# dataInfos = np.genfromtxt(fileName,
+#                              delimiter=',',
+#                              dtype=infosTypes,
+#                              names=['prop', 'radius', 'radiusRandom'])
 
 
 animation = animation.FuncAnimation(fig, update, interval=40, frames=totalFrames)
 # plt.show()
 animation.save('exports/im.mp4', writer=writer)
+# animation.save('exports/'+dataInfos["prop"]+'%'+dataInfos["radius"]+'+-'+dataInfos["radiusRandom"]+'.mp4', writer=writer)

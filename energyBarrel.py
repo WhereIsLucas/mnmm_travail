@@ -71,7 +71,7 @@ for i in range(0, totalFrames):
 #
 # plt.savefig('exports/energyBarrel.png')
 
-plt.xlabel('x')
-plt.ylabel('y')
+plt.xlabel('t(ms)')
+plt.ylabel('v')
 plt.plot(velocity)
-plt.savefig('exports/velocityBarrel.png')
+plt.savefig('exports/velocity.png')

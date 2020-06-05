@@ -24,6 +24,7 @@ energyGrain = []
 energyBarrel = []
 potentialEnergy = []
 kineticEnergy = []
+kineticRotEnergy = []
 
 for i in range(0, totalFrames):
     fileName = path + "grain" + str(i) + ".txt"
@@ -44,13 +45,12 @@ for i in range(0, totalFrames):
     eBarrel = 0
     if data.size > 1:
         for j in range(0, data.size):
-            mass = math.pi * pow(data[j]['radius'], 2)
+            mass = math.pi * pow(data[j]['radius'], 2) * 1600
             potentialEnergyValue = data[j]['y'] * mass * 9.81
             kineticEnergyValue = .5 * mass * (data[j]['vx'] * data[j]['vx'] + data[j]['vy'] * data[j]['vy'])
             kineticEnergyRotValue = .5 * .5 * mass * pow(data[j]['radius'], 2) * pow(data[j]['omega'], 2)
 
             eGrain += potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
-            eTotal += eGrain
             potentialEnergyTot += potentialEnergyValue
             kineticEnergyTot += kineticEnergyValue
             kineticEnergyRotTot += kineticEnergyRotValue
@@ -61,16 +61,17 @@ for i in range(0, totalFrames):
         kineticEnergyRotValue = .5 * .5 * mass * pow(data['radius'], 2) * pow(data['omega'], 2)
 
         eGrain += potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
-        eTotal += eGrain
         potentialEnergyTot += potentialEnergyValue
         kineticEnergyTot += kineticEnergyValue
         kineticEnergyRotTot += kineticEnergyRotValue
 
-    mass = 2. * math.pi * data2['radius'] * 0.01 * 2
+    eTotal += eGrain
+
+    mass = math.pi * pow(data2['radius'], 2) * 1400 * 0.05
     potentialEnergyValue = data2['y'] * mass * 9.81
     kineticEnergyValue = .5 * mass * (data2['vx'] * data2['vx'] + data2['vy'] * data2['vy'])
     kineticEnergyRotValue = 2 / 3 * mass * pow(data2['radius'], 2) * pow(data2['omega'], 2)
-    eBarrel += potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
+    eBarrel = potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
     eTotal += eBarrel
     potentialEnergyTot += potentialEnergyValue
     kineticEnergyTot += kineticEnergyValue
@@ -80,18 +81,35 @@ for i in range(0, totalFrames):
     energyGrain.insert(i, eGrain)
     energyBarrel.insert(i, eBarrel)
     potentialEnergy.insert(i, potentialEnergyTot)
-    kineticEnergy.insert(i, kineticEnergyRotTot + kineticEnergyTot)
+    kineticEnergy.insert(i, kineticEnergyTot)
+    kineticRotEnergy.insert(i, kineticEnergyRotTot)
+plt.figure(1)
+plt.xlabel('x')
+plt.ylabel('y')
+# plt.plot(energy)
+# plt.plot(energyGrain)
+# plt.plot(energyBarrel)
+plt.plot(potentialEnergy)
+plt.plot(kineticRotEnergy)
+plt.plot(kineticEnergy)
+# plt.legend(['energyGrain', 'energyBarrel'])
+plt.legend(['potential energy', 'kinetic rot energy', 'kinetic energy'])
+# plt.plot(kineticEnergyRot)
 
+
+plt.savefig('exports/energy.png')
+
+plt.figure(2)
 plt.xlabel('x')
 plt.ylabel('y')
 # plt.plot(energy)
 plt.plot(energyGrain)
 plt.plot(energyBarrel)
-plt.plot(potentialEnergy)
-plt.plot(kineticEnergy)
-# plt.legend(['energy', 'energyGrain', 'energyBarrel'])
-plt.legend(['energyGrain', 'energyBarrel', 'potentialEnergy', 'totalKineticEnergy'])
+# plt.plot(potentialEnergy)
+# plt.plot(kineticEnergy)
+# plt.legend(['energy'])
+plt.legend(['energyGrain', 'energyBarrel'])
 # plt.plot(kineticEnergyRot)
-
-
-plt.savefig('exports/energy.png')
+#
+#
+plt.savefig('exports/GrainBarrel.png')
