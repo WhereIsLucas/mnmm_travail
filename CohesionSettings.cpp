@@ -12,16 +12,16 @@ void CohesionSettings::setDistanceThreshold(double distanceThreshold) {
     CohesionSettings::distanceThreshold = distanceThreshold;
 }
 
-double CohesionSettings::getForceValue() const {
-    return forceValue;
+double CohesionSettings::getCohesionConstant() const {
+    return cohesionConstant;
 }
 
-void CohesionSettings::setForceValue(double forceValue) {
-    CohesionSettings::forceValue = forceValue;
+void CohesionSettings::setCohesionConstant(double forceValue) {
+    CohesionSettings::cohesionConstant = forceValue;
 }
 
 CohesionSettings::CohesionSettings(double distanceThreshold, double forceValue) : distanceThreshold(distanceThreshold),
-                                                                                  forceValue(forceValue) {
+                                                                                  cohesionConstant(forceValue) {
     CohesionSettings::setDistanceThreshold(distanceThreshold);
-    CohesionSettings::setForceValue(forceValue);
+    CohesionSettings::setCohesionConstant(forceValue);
 }

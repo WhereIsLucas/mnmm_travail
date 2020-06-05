@@ -9,7 +9,7 @@
 class CohesionSettings {
 private:
     double distanceThreshold;
-    double forceValue;
+    double cohesionConstant;
 public:
     CohesionSettings(double distanceThreshold, double forceValue);
 
@@ -18,9 +18,9 @@ public:
 
     void setDistanceThreshold(double distanceThreshold);
 
-    double getForceValue() const;
+    double getCohesionConstant() const;
 
-    void setForceValue(double forceValue);
+    void setCohesionConstant(double forceValue);
 };
 
 

@@ -14,5 +14,4 @@ add_executable(travail2
         Grain.cpp
         Grain.h
         main.cpp
-        Plan.cpp
-        Plan.h GrainPrinter.cpp GrainPrinter.h Vector2.cpp Vector2.h Domain.cpp Domain.h collisions.cpp collisions.h CollisionSettings.cpp CollisionSettings.h Loader.cpp Loader.h cohesion.cpp cohesion.h CohesionSettings.cpp CohesionSettings.h)
+        GrainPrinter.cpp GrainPrinter.h Vector2.cpp Vector2.h Domain.cpp Domain.h collisions.cpp collisions.h CollisionSettings.cpp CollisionSettings.h Loader.cpp Loader.h cohesion.cpp cohesion.h CohesionSettings.cpp CohesionSettings.h)

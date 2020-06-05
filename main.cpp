@@ -5,7 +5,6 @@
 #include <random>
 #include <omp.h>
 #include "Grain.h"
-#include "Plan.h"
 #include "Cell.h"
 #include "GrainPrinter.h"
 #include "Container.h"
@@ -29,11 +28,11 @@ int main(int argc, char **argv) {
     // dt est lié à
     auto containerCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
     auto grainCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
-    CohesionSettings cohesionSettings(.005, .04);
+    CohesionSettings cohesionSettings(.0005, 300.);
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
-    double totalTime = 20;
+    double totalTime = 5;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
     double dt = 10. * 0.000001;
@@ -44,10 +43,10 @@ int main(int argc, char **argv) {
     int paletteGrains = 10;
     int nPalettes = 3;
     int totalPalettesGrains = nPalettes * paletteGrains;
-    double paletteRelativeWidth = .3;
+    double paletteRelativeWidth = .1;
     double paletteGrainRadius = 0.004;
 
-    int numberOfGrains = 1400;
+    int numberOfGrains = 140;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
     double radius = 0.005;
     double mass;
