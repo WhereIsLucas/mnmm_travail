@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     // dt est lié à
     auto containerCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
     auto grainCollisionSettings = new CollisionSettings(.9, .6, 1000., 1000000.);
-    CohesionSettings cohesionSettings(.0005, 300.);
+    CohesionSettings cohesionSettings(.0005, 700.);
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     double paletteRelativeWidth = .1;
     double paletteGrainRadius = 0.004;
 
-    int numberOfGrains = 140;
+    int numberOfGrains = 300;
     int numberOfGrainsWithPalettes = numberOfGrains + (totalPalettesGrains);
     double radius = 0.005;
     double mass;
