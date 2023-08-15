@@ -13,18 +13,18 @@ void BallPrinter::setPath(const std::string path) {
     BallPrinter::path = path;
 }
 
-void BallPrinter::print(Ball barrel, int frameNumber) {
-    std::string fileName = BallPrinter::getPath() + "barrel" + std::to_string(frameNumber) + ".txt";
+void BallPrinter::print(Ball ball, int frameNumber) {
+    std::string fileName = BallPrinter::getPath() + "ball" + std::to_string(frameNumber) + ".txt";
     std::ofstream file;
     file.open(fileName.c_str(), std::ios::app);
     file.precision(10);
-    file << barrel.getX() << "," << barrel.getY() << "," << barrel.getVx() << "," << barrel.getVy()
-         << "," << barrel.getOmega() << "," << barrel.getRadius() << std::endl;
+    file << ball.getX() << "," << ball.getY() << "," << ball.getVx() << "," << ball.getVy()
+         << "," << ball.getOmega() << "," << ball.getRadius() << std::endl;
     file.close();
 }
 
 void BallPrinter::clearPrint(int frameNumber) {
-    std::string fileName = BallPrinter::getPath() + "barrel" + std::to_string(frameNumber) + ".txt";
+    std::string fileName = BallPrinter::getPath() + "ball" + std::to_string(frameNumber) + ".txt";
     remove(fileName.c_str());
 }
 

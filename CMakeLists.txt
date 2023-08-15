@@ -14,5 +14,6 @@ add_executable(mn_boris
         Grain.cpp
         Grain.h
         main.cpp
-        Plan.cpp
-        Plan.h GrainPrinter.cpp GrainPrinter.h Vector2.cpp Vector2.h Domain.cpp Domain.h Ball.cpp Ball.h BallPrinter.cpp BallPrinter.h CollisionSettings.cpp CollisionSettings.h Collisions.cpp Collisions.h)
+        Plane.cpp
+        Plane.h GrainPrinter.cpp GrainPrinter.h Vector2.cpp Vector2.h Domain.cpp Domain.h Ball.cpp Ball.h BallPrinter.cpp BallPrinter.h CollisionSettings.cpp CollisionSettings.h Collisions.cpp Collisions.h
+        PlanePrinter.cpp)

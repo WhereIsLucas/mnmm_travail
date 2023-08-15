@@ -8,16 +8,16 @@
 #include "Grain.h"
 #include "Container.h"
 #include "CollisionSettings.h"
-#include "Plan.h"
+#include "Plane.h"
 #include "Ball.h"
 
 void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings *collisionSettings);
 
 void computeCollisionWithContainer(Grain *pGrain1, Container *container, CollisionSettings *collisionSettings);
 
-void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Ball *pBarrel, CollisionSettings *collisionSettings);
+void computeCollusionBetweenGrainAndBall(Grain *pGrain1, Ball *pBall, CollisionSettings *collisionSettings);
 
-void computeCollisionBetweenBarrelAndPlan(Ball *pBarrel, Plan *plan, CollisionSettings *collisionSettings);
+void computeCollisionBetweenBallAndPlane(Ball *pBall, Plane *plan, CollisionSettings *collisionSettings);
 
 
 #endif //MN_BORIS_COLLISIONS_H

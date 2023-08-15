@@ -60,11 +60,11 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
     }
 }
 
-void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Ball *pBarrel, CollisionSettings *collisionSettings) {
-    double delta = pBarrel->getRadius() - pGrain1->getRadius() -
-                   getDistanceBetweenVectors(pGrain1->getPosition(), pBarrel->getPosition());
+void computeCollusionBetweenGrainAndBall(Grain *pGrain1, Ball *pBall, CollisionSettings *collisionSettings) {
+    double delta = pBall->getRadius() - pGrain1->getRadius() -
+                   getDistanceBetweenVectors(pGrain1->getPosition(), pBall->getPosition());
     if (delta < 0) {
-        Vector2 normalVector = (pBarrel->getPosition() - pGrain1->getPosition()).normalize();
+        Vector2 normalVector = (pBall->getPosition() - pGrain1->getPosition()).normalize();
         double vx = pGrain1->getVx() + pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getY();
         double vy = pGrain1->getVy() - pGrain1->getRadius() * pGrain1->getOmega() * normalVector.getX();
 
@@ -83,7 +83,7 @@ void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Ball *pBarrel, Collis
         Vector2 tangentForce(tangentForceNorm * tangentVector);
         if (normalForceNorm > 0) {
             pGrain1->addForce(normalForceNorm * normalVector);
-            pBarrel->addForce(-1. * normalForceNorm * normalVector);
+            pBall->addForce(-1. * normalForceNorm * normalVector);
         } else {
             normalForceNorm = 0.;
         }
@@ -93,29 +93,29 @@ void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Ball *pBarrel, Collis
         }
 
         pGrain1->addForce(tangentForce);
-        pBarrel->addForce(-1. * tangentForce);
+        pBall->addForce(-1. * tangentForce);
         //torque
         double M = pGrain1->getRadius() *
                    (-1. * normalVector.getX() * tangentForce.getY()
                     + (normalVector.getY() * tangentForce.getX()));
         pGrain1->addMomentum(M);
-        pBarrel->addMomentum(-1. * M);
+        pBall->addMomentum(-1. * M);
         return;
     }
 
 
 }
 
-void computeCollisionBetweenBarrelAndPlan(Ball *pBarrel, Plan *plan, CollisionSettings *collisionSettings) {
+void computeCollisionBetweenBallAndPlane(Ball *pBall, Plane *plan, CollisionSettings *collisionSettings) {
     Vector2 normalVector = plan->getNormal();
-    Vector2 vecteur = pBarrel->getPosition() - plan->getPosition();
+    Vector2 vecteur = pBall->getPosition() - plan->getPosition();
     //vecteur.display();
-    double delta = vecteur.getX() * normalVector.getX() + vecteur.getY() * normalVector.getY() - pBarrel->getRadius();
+    double delta = vecteur.getX() * normalVector.getX() + vecteur.getY() * normalVector.getY() - pBall->getRadius();
     //std::cout << delta << std::endl;
     if (delta < 0) {
 
-        double vx = pBarrel->getVx() + pBarrel->getRadius() * pBarrel->getOmega() * normalVector.getY();
-        double vy = pBarrel->getVy() - pBarrel->getRadius() * pBarrel->getOmega() * normalVector.getX();
+        double vx = pBall->getVx() + pBall->getRadius() * pBall->getOmega() * normalVector.getY();
+        double vy = pBall->getVy() - pBall->getRadius() * pBall->getOmega() * normalVector.getX();
 
         Vector2 velocityAtContactPoint(vx, vy);
         Vector2 normalVelocity = projectOntoVector(velocityAtContactPoint, normalVector);
@@ -126,14 +126,14 @@ void computeCollisionBetweenBarrelAndPlan(Ball *pBarrel, Plan *plan, CollisionSe
         }
 
         //contact forces and torque
-        double effectiveMass = pBarrel->getMass();
+        double effectiveMass = pBall->getMass();
         double eta = collisionSettings->getEta(effectiveMass);
         double normalForceNorm = -1. * (collisionSettings->getKn() * delta) + (eta * normalVelocity.getNorm());
         double tangentForceNorm = -collisionSettings->getKt() * tangentVelocity.getNorm();
         Vector2 tangentForce(tangentForceNorm * tangentVector);
 
         if (normalForceNorm > 0) {
-            pBarrel->addForce(normalForceNorm * normalVector);
+            pBall->addForce(normalForceNorm * normalVector);
 //         std::cout << (normalForceNorm * normalVector).getX() << " " << (normalForceNorm * normalVector).getY() << " N" << std::endl;
         } else {
             normalForceNorm = 0.;
@@ -142,17 +142,17 @@ void computeCollisionBetweenBarrelAndPlan(Ball *pBarrel, Plan *plan, CollisionSe
         if (tangentForce.getNorm() > collisionSettings->getMu() * normalForceNorm) {
             tangentForce = -1. * collisionSettings->getMu() * normalForceNorm * tangentVector;
         }
-        pBarrel->addForce(tangentForce);
+        pBall->addForce(tangentForce);
 
-        Vector2 forceVector = pBarrel->getForce();
+        Vector2 forceVector = pBall->getForce();
 //        std::cout << forceVector.getX() << " " << forceVector.getY() << std::endl;
 
         //torque
-        double M = -1. * pBarrel->getRadius() *
+        double M = -1. * pBall->getRadius() *
                    (normalVector.getX() * tangentForce.getY() - normalVector.getY() * tangentForce.getX());
 //        std::cout << M << std::endl;
 
-        pBarrel->addMomentum(M);
+        pBall->addMomentum(M);
     }
 
 

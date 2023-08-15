@@ -18,7 +18,7 @@ public:
 
     void setPath(const std::string path);
 
-    void print(Ball barrel, int frameNumber);
+    void print(Ball ball, int frameNumber);
 
     void clearPrint(int frameNumber);
 };

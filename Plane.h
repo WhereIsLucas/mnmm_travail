@@ -1,11 +1,11 @@
 
-#ifndef MN_BORIS_PLAN_H
-#define MN_BORIS_PLAN_H
+#ifndef MN_BORIS_PLANE_H
+#define MN_BORIS_PLANE_H
 
 #include <string>
 #include "Vector2.h"
 
-class Plan {
+class Plane {
 
 private:
     Vector2 position;
@@ -26,13 +26,13 @@ private:
     Vector2 normal;
 
 public:
-    Plan();
+    Plane();
 
-    ~Plan();
+    ~Plane();
 
     void initPlan(Vector2, Vector2);
 
     void initPlanFromCoordinates(Vector2 a, Vector2 b);
 };
 
-#endif //MN_BORIS_PLAN_H
+#endif //MN_BORIS_PLANE_H

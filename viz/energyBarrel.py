@@ -4,9 +4,9 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 
-barrelTypes = ['float', 'float', 'float', 'float', 'float', 'float']
+ballTypes = ['float', 'float', 'float', 'float', 'float', 'float']
 domainTypes = ['float', 'float']
-pathBarrel = "./cmake-build-debug/datas/barrel/"
+pathBall = "./cmake-build-debug/datas/ball/"
 data = []
 
 # Set up the codec for the video file
@@ -15,7 +15,7 @@ writer = Writer(fps=25, metadata=dict(artist='Hugo Trevisani'), bitrate=1800)
 fig = plt.figure(figsize=(7, 7))
 
 # this counts the number of frames
-num_files = len([f for f in os.listdir(pathBarrel) if os.path.isfile(os.path.join(pathBarrel, f))])
+num_files = len([f for f in os.listdir(pathBall) if os.path.isfile(os.path.join(pathBall, f))])
 print(num_files)
 totalFrames = num_files - 1
 energy = []
@@ -24,10 +24,10 @@ kineticEnergy = []
 kineticEnergyRot = []
 velocity = []
 for i in range(0, totalFrames):
-    fileName = pathBarrel + "barrel" + str(i) + ".txt"
+    fileName = pathBall + "ball" + str(i) + ".txt"
     data = np.genfromtxt(fileName,
                          delimiter=',',
-                         dtype=barrelTypes,
+                         dtype=ballTypes,
                          names=['x', 'y', 'vx', 'vy', 'theta', 'radius'])
     eTotal = 0
     potentialEnergyTot = 0
@@ -69,7 +69,7 @@ for i in range(0, totalFrames):
 # plt.plot(kineticEnergyRot)
 # plt.legend(['energy', 'potentialEnergy', 'totalKineticEnergy', 'RotEnergy'])
 #
-# plt.savefig('exports/energyBarrel.png')
+# plt.savefig('exports/energyBall.png')
 
 plt.xlabel('t(ms)')
 plt.ylabel('v')

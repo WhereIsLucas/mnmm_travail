@@ -5,14 +5,13 @@
 #include "Grain.h"
 #include "Ball.h"
 #include "BallPrinter.h"
-#include "Plan.h"
+#include "Plane.h"
 #include "Cell.h"
 #include "GrainPrinter.h"
-#include "Container.h"
 #include "Vector2.h"
 #include "Domain.h"
 #include "Collisions.h"
-#include <chrono>
+#include "PlanePrinter.h"
 #include <fstream>
 
 int main(int argc, char **argv) {
@@ -38,12 +37,13 @@ int main(int argc, char **argv) {
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
 
-    GrainPrinter grainPrinter("data/grain/");
+    GrainPrinter grainPrinter("data/grains/");
     BallPrinter ballPrinter("data/ball/");
+    PlanePrinter planePrinter("data/plane/");
 
 // GRAINS
-    double prop = 0.4; //Proportion de remplissage voulue (entre 0 et 1)
-    double radius = 0.075; //Radius moyen des grains
+    double prop = 0.; //Proportion de remplissage voulue (entre 0 et 1)
+    double radius = 0.002; //Radius moyen des grains
     int numberOfGrains = (int) (prop / pow(radius, 2));
     std::ofstream infoFile;
     infoFile.open("data/infos.txt");
@@ -56,24 +56,20 @@ int main(int argc, char **argv) {
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
 
-// BARREL
-    double ballRadius = 1.;
-    double ballRho = 1400.; //masse volumique du PVC
-    double ballMass = 2. * M_PI + ballRadius * 0.01 * ballRho;
+    // Ball
+    double ballRadius = 0.0375;
+    double ballMass = 0.0019;
     Ball ball;
 
     //this setups the getRadius distribution
     double radiusMean = radius;
 
-    // setup the domain and the base plane
-
+    // setup the domain and the vibrating plane
     double xDomain = 1.2 * ballRadius;
-    Vector2 a(0, xDomain);
-    Vector2 b(xDomain, 0);
-    Plan vibratingPlane;
-
-    vibratingPlane.initPlanFromCoordinates(a, b);
-    vibratingPlane.printPlanInfos("data/vibratingPlane.txt");
+    Plane vibratingPlane;
+    vibratingPlane.initPlanFromCoordinates(Vector2(-2., 0), Vector2(2., 0));
+    double frequency = 6.;
+    double amplitude = 0.0095;
 
     double yDomain = 5.* ballRadius;
 
@@ -83,9 +79,7 @@ int main(int argc, char **argv) {
 
 
     //ON place les grains et le ball
-    double xBall = ballRadius;
-    Vector2 ballPosition(vibratingPlane.getPointFromX(xBall));
-    ball.initBarrel(ballRadius, ballMass,Vector2(0, ballRadius),Vector2(0.));
+    ball.initBall(ballRadius, ballMass, Vector2(0, ballRadius), Vector2(0.));
 
     while (numberOfPlacedGrains < numberOfGrains) {
         numberOfOverlaps = 0;
@@ -115,6 +109,7 @@ int main(int argc, char **argv) {
     for (int l = 0; l <= totalFrames; l++) {
         grainPrinter.clearPrint(l);
         ballPrinter.clearPrint(l);
+        planePrinter.clearPrint(l);
     }
 
     //record initial state
@@ -122,6 +117,7 @@ int main(int argc, char **argv) {
         grainPrinter.print(grains[i], 0);
     }
     ballPrinter.print(ball, 0);
+    planePrinter.print(vibratingPlane, 0);
     std::cout << "Initial state in saved" << std::endl;
 
     double t = 0.;
@@ -132,7 +128,6 @@ int main(int argc, char **argv) {
         }
 
         //loop on grains
-
         for (i = 0; i < numberOfGrains; i++) {
             grains[i].updatePosition(dt / 2.);
             grains[i].resetForce();
@@ -142,6 +137,9 @@ int main(int argc, char **argv) {
         ball.resetForce();
         ball.addGravityForce(Vector2(0, -9.81));
 
+        //we update the position of the vibrating plane. It is a sin wave based on the paremeters above
+        vibratingPlane.setPosition(Vector2(0., amplitude * sin(2. * M_PI * frequency * t)));
+
 
         /*** contact detection and forces ***/
         for (i = 0; i < numberOfGrains; i++) {
@@ -149,9 +147,9 @@ int main(int argc, char **argv) {
                 computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
             }
             //Collisions with the ball
-            computeCollusionBetweenGrainAndBarrel(&grains[i], &ball, ballGrainCollisionsSettings);
+            computeCollusionBetweenGrainAndBall(&grains[i], &ball, ballGrainCollisionsSettings);
         }
-        computeCollisionBetweenBarrelAndPlan(&ball, &vibratingPlane, ballCollisionsSettings);
+        computeCollisionBetweenBallAndPlane(&ball, &vibratingPlane, ballCollisionsSettings);
 
         //update velocity and position
         for (i = 0; i < numberOfGrains; i++) {
@@ -168,6 +166,7 @@ int main(int argc, char **argv) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }
                 ballPrinter.print(ball, (int) ((recTime + dt) * fps));
+                planePrinter.print(vibratingPlane, (int) ((recTime + dt) * fps));
                 std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
             }
         }

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 types = ['float', 'float', 'float', 'float', 'float', 'float', 'float']
-typesBarrel = ['float', 'float', 'float', 'float', 'float', 'float']
+typesBall = ['float', 'float', 'float', 'float', 'float', 'float']
 domainTypes = ['float', 'float']
 
 # Set up the codec for the video file
@@ -15,34 +15,34 @@ fig = plt.figure(figsize=(7, 7))
 
 # this counts the number of frames
 path = "./cmake-build-debug/datas/grain/"
-pathBarrel = "./cmake-build-debug/datas/barrel/"
+pathBall = "./cmake-build-debug/datas/ball/"
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
 totalFrames = num_files
 energy = []
 energyGrain = []
-energyBarrel = []
+energyBall = []
 potentialEnergy = []
 kineticEnergy = []
 kineticRotEnergy = []
 
 for i in range(0, totalFrames):
     fileName = path + "grain" + str(i) + ".txt"
-    fileNameBarrel = pathBarrel + "barrel" + str(i) + ".txt"
+    fileNameBall = pathBall + "ball" + str(i) + ".txt"
     data = np.genfromtxt(fileName,
                          delimiter=',',
                          dtype=types,
                          names=["ID", 'x', 'y', 'vx', 'vy', 'omega', 'radius'])
-    data2 = np.genfromtxt(fileNameBarrel,
+    data2 = np.genfromtxt(fileNameBall,
                           delimiter=',',
-                          dtype=typesBarrel,
+                          dtype=typesBall,
                           names=['x', 'y', 'vx', 'vy', 'omega', 'radius'])
     eTotal = 0
     potentialEnergyTot = 0
     kineticEnergyTot = 0
     kineticEnergyRotTot = 0
     eGrain = 0
-    eBarrel = 0
+    eBall = 0
     if data.size > 1:
         for j in range(0, data.size):
             mass = math.pi * pow(data[j]['radius'], 2) * 1600
@@ -71,15 +71,15 @@ for i in range(0, totalFrames):
     potentialEnergyValue = data2['y'] * mass * 9.81
     kineticEnergyValue = .5 * mass * (data2['vx'] * data2['vx'] + data2['vy'] * data2['vy'])
     kineticEnergyRotValue = 2 / 3 * mass * pow(data2['radius'], 2) * pow(data2['omega'], 2)
-    eBarrel = potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
-    eTotal += eBarrel
+    eBall = potentialEnergyValue + kineticEnergyValue + kineticEnergyRotValue
+    eTotal += eBall
     potentialEnergyTot += potentialEnergyValue
     kineticEnergyTot += kineticEnergyValue
     kineticEnergyRotTot += kineticEnergyRotValue
 
     energy.insert(i, eTotal)
     energyGrain.insert(i, eGrain)
-    energyBarrel.insert(i, eBarrel)
+    energyBall.insert(i, eBall)
     potentialEnergy.insert(i, potentialEnergyTot)
     kineticEnergy.insert(i, kineticEnergyTot)
     kineticRotEnergy.insert(i, kineticEnergyRotTot)
@@ -88,11 +88,11 @@ plt.xlabel('x')
 plt.ylabel('y')
 # plt.plot(energy)
 # plt.plot(energyGrain)
-# plt.plot(energyBarrel)
+# plt.plot(energyBall)
 plt.plot(potentialEnergy)
 plt.plot(kineticRotEnergy)
 plt.plot(kineticEnergy)
-# plt.legend(['energyGrain', 'energyBarrel'])
+# plt.legend(['energyGrain', 'energyBall'])
 plt.legend(['potential energy', 'kinetic rot energy', 'kinetic energy'])
 # plt.plot(kineticEnergyRot)
 
@@ -104,12 +104,12 @@ plt.xlabel('x')
 plt.ylabel('y')
 # plt.plot(energy)
 plt.plot(energyGrain)
-plt.plot(energyBarrel)
+plt.plot(energyBall)
 # plt.plot(potentialEnergy)
 # plt.plot(kineticEnergy)
 # plt.legend(['energy'])
-plt.legend(['energyGrain', 'energyBarrel'])
+plt.legend(['energyGrain', 'energyBall'])
 # plt.plot(kineticEnergyRot)
 #
 #
-plt.savefig('exports/GrainBarrel.png')
+plt.savefig('exports/GrainBall.png')

@@ -10,7 +10,7 @@ Ball::~Ball() {
 
 }
 
-void Ball::initBarrel(double radius, double mass, Vector2 positionVector, Vector2 velocityVector) {
+void Ball::initBall(double radius, double mass, Vector2 positionVector, Vector2 velocityVector) {
     Ball::setRadius(radius);
     Ball::setMass(mass);
     inertia = 0.5 * mass * radius * radius;

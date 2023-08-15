@@ -94,7 +94,7 @@ public:
 
     double getTheta();
 
-    void initBarrel(double radius, double mass, Vector2 positionVector, Vector2 velocityVector);
+    void initBall(double radius, double mass, Vector2 positionVector, Vector2 velocityVector);
 };
 
 #endif
