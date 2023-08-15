@@ -1,4 +1,3 @@
-#include <math.h>
 #include "Plan.h"
 
 Plan::Plan()

@@ -9,11 +9,11 @@ data = []
 
 # Set up the codec for the video file
 Writer = animation.writers['ffmpeg']
-writer = Writer(fps=25, metadata=dict(artist='Lucas H'), bitrate=1800)
-fig = plt.figure(figsize=(7, 7))
+writer = Writer(fps=25, metadata=dict(artist='Boris G'), bitrate=1800)
+fig = plt.figure(figsize=(7, 14))
 
 # this counts the number of frames
-path = "./cmake-build-debug/datas/"
+path = "../cmake-build-debug/data/"
 num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
 print(num_files)
 totalFrames = num_files - 1
@@ -37,10 +37,10 @@ plt.xlim(-0.2 * domain["x"], domain['x'] * 1.2)
 plt.ylim(-0.2 * domain["y"], domain['y'] * 1.2)
 plt.xlabel('x')
 plt.ylabel('y')
-a_circle = plt.Circle((.3, .4), .005)
-b_circle = plt.Circle((.3, .3), .3, fill=False)
-plt.gca().add_artist(a_circle)
-plt.gca().add_artist(b_circle)
+# a_circle = plt.Circle((.3, .4), .005)
+# b_circle = plt.Circle((.3, .3), .3, fill=False)
+# plt.gca().add_artist(a_circle)
+# plt.gca().add_artist(b_circle)
 
 
 plt.savefig('exports/test.png')

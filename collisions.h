@@ -2,8 +2,8 @@
 // Created by lucas on 16/05/2020.
 //
 
-#ifndef TRAVAIL2_COLLISIONS_H
-#define TRAVAIL2_COLLISIONS_H
+#ifndef MNMM_COLLISIONS_H
+#define MNMM_COLLISIONS_H
 
 #include "Grain.h"
 #include "Container.h"
@@ -14,4 +14,4 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
 void computeCollisionWithContainer(Grain *pGrain1, Container *container, CollisionSettings *collisionSettings);
 
 
-#endif //TRAVAIL2_COLLISIONS_H
+#endif //MNMM_COLLISIONS_H

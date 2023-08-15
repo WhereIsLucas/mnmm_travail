@@ -15,27 +15,32 @@
 
 
 int main(int argc, char **argv) {
+
     auto t1 = omp_get_wtime();
 
+    //initialize the random librairies
     std::random_device rd;
     std::mt19937 gen(rd());
 
     std::uniform_real_distribution<double> uniformRealDistribution(0, 1);
 
+    //iterators
     int i, j, k;
+
     // COLLISIONS SETTINGS
     auto containerCollisionSettings = new CollisionSettings(.9,.6,1000.,1000000.);
     auto grainCollisionSettings = new CollisionSettings(.9,.6,8000.,1000000.);
 
-    // VIDEO OPTIONS
+    // VIDEO SETTINGS for output data
     int fps = 25;
     double tStartCapture = 0.;
     double totalTime = 10;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
-    double dt = 1. * 0.000001;
+    //dt is the delta used for calculate the interframes
+    double dt = 1. * 0.00001;
 
-    GrainPrinter grainPrinter("datas/");
+    GrainPrinter grainPrinter("data/");
 
     // GRAINS
     int numberOfGrains = 20;
@@ -46,26 +51,19 @@ int main(int argc, char **argv) {
     int numberOfPlacedGrains = 0;
     int numberOfOverlaps;
 
-    //this setups the getRadius distribution
-    double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusMean / 3.),
-                                                              radiusMean + (radiusMean / 3.));
-
-
-    //container
+    // Container is the ball
     double containerRadius = .3;
     Vector2 containerCenter(containerRadius);
     Container container(containerRadius, containerCenter);
 
     //DOMAIN
     double xDomain = 2. * containerRadius * 1.2;
-    double yDomain = 2. * containerRadius * 1.2;
+    double yDomain = 4. * containerRadius * 1.2;
     Domain domain(xDomain, yDomain);
-    domain.printDomainInfos("datas/domain.txt");
+    domain.printDomainInfos("data/domain.txt");
 
     //Placing the grains
     while (numberOfPlacedGrains < numberOfGrains) {
-        radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
         //We choose a random direction and a random radius
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
@@ -107,7 +105,7 @@ int main(int argc, char **argv) {
 
 
     //linked cells
-    double cellSize = 2.2 * radiusMean;
+    double cellSize = 2.2 * radius;
     cellSize = domain.getX()/5.;
     int nCellX = (int) ((domain.getX()) / cellSize);
     int nCellY = (int) ((domain.getY()) / cellSize);

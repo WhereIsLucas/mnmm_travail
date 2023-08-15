@@ -8,7 +8,7 @@ Cell::Cell()
 
 Cell::~Cell()
 {
-    
+
 }
 
 void Cell::initCell(int i_index)
@@ -29,7 +29,7 @@ void Cell::addNeighbor(int i_neighborIndex)
     m_numberOfNeighbors++;
 }
 
-int Cell::getHeadOfList()
+int Cell::getHeadOfList() const
 {
     return headOfList;
 }
@@ -39,7 +39,7 @@ int Cell::neighbor(int i_n)
     return m_listOfNeighbors[i_n];
 }
 
-int Cell::numberOfNeighbors()
+int Cell::numberOfNeighbors() const
 {
     return m_numberOfNeighbors;
 }

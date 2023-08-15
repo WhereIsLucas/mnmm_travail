@@ -1,5 +1,5 @@
-#ifndef TRAVAIL2_GRAIN_H
-#define TRAVAIL2_GRAIN_H
+#ifndef MNMM_GRAIN_H
+#define MNMM_GRAIN_H
 
 #include "Vector2.h"
 

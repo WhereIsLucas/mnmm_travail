@@ -2,8 +2,8 @@
 // Created by lucas on 28/03/2020.
 //
 
-#ifndef TRAVAIL2_CONTAINER_H
-#define TRAVAIL2_CONTAINER_H
+#ifndef MNMM_CONTAINER_H
+#define MNMM_CONTAINER_H
 
 
 #include "Vector2.h"
@@ -24,4 +24,4 @@ public:
     void setRadius(double radiusValue);
 };
 
-#endif //TRAVAIL2_CONTAINER_H
+#endif //MNMM_CONTAINER_H

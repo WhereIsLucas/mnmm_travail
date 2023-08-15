@@ -14,7 +14,7 @@ public:
     void setHeadOfList(int);
     void addNeighbor(int);
     
-    int getHeadOfList();
+    int getHeadOfList() const;
     int neighbor(int);
-    int numberOfNeighbors();
+    int numberOfNeighbors() const;
 };

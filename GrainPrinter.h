@@ -2,8 +2,8 @@
 // Created by lucas on 02/04/2020.
 //
 
-#ifndef TRAVAIL2_GRAINPRINTER_H
-#define TRAVAIL2_GRAINPRINTER_H
+#ifndef MNMM_GRAINPRINTER_H
+#define MNMM_GRAINPRINTER_H
 
 
 #include <string>
@@ -18,9 +18,9 @@ public:
     const std::string &getPath() const;
     void setPath(const std::string path);
 
-    void print(Grain grain, int frameNumber);
-    void clearPrint(int frameNumber);
+    void print(Grain grain, int frameNumber) const;
+    void clearPrint(int frameNumber) const;
 };
 
 
-#endif //TRAVAIL2_GRAINPRINTER_H
+#endif //MNMM_GRAINPRINTER_H

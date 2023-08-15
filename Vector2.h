@@ -2,8 +2,8 @@
 // Created by lucas on 22/04/2020.
 //
 
-#ifndef TRAVAIL2_VECTOR2_H
-#define TRAVAIL2_VECTOR2_H
+#ifndef MNMM_VECTOR2_H
+#define MNMM_VECTOR2_H
 
 
 class Vector2 {
@@ -44,5 +44,5 @@ Vector2 operator+(Vector2 vector1, Vector2 vector2);
 Vector2 operator-(Vector2 vector1, Vector2 vector2);
 Vector2 operator*(double coefficient, Vector2 vector);
 
-#endif //TRAVAIL2_VECTOR2_H
+#endif //MNMM_VECTOR2_H
 

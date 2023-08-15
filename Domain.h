@@ -2,8 +2,8 @@
 // Created by hugo on 14/05/2020.
 //
 
-#ifndef TRAVAIL2_DOMAIN_H
-#define TRAVAIL2_DOMAIN_H
+#ifndef MNMM_DOMAIN_H
+#define MNMM_DOMAIN_H
 
 
 class Domain {
@@ -27,4 +27,4 @@ public:
 };
 
 
-#endif //TRAVAIL2_DOMAIN_H
+#endif //MNMM_DOMAIN_H

@@ -2,7 +2,7 @@
 #include <iostream>
 #include "GrainPrinter.h"
 
-void GrainPrinter::print(Grain grain, int frameNumber) {
+void GrainPrinter::print(Grain grain, int frameNumber) const {
     std::string fileName = GrainPrinter::getPath()+"grain" + std::to_string(frameNumber) + ".txt";
     std::ofstream file;
     file.open(fileName.c_str(), std::ios::app);
@@ -19,7 +19,7 @@ void GrainPrinter::setPath(const std::string path) {
     GrainPrinter::path = path;
 }
 
-void GrainPrinter::clearPrint(int frameNumber) {
+void GrainPrinter::clearPrint(int frameNumber) const {
     std::string fileName = GrainPrinter::getPath()+"grain" + std::to_string(frameNumber) + ".txt";
     remove(fileName.c_str());
 }
