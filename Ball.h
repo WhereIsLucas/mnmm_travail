@@ -1,9 +1,9 @@
-#ifndef TRAVAIL2_BARREL_H
-#define TRAVAIL2_BARREL_H
+#ifndef MN_BORIS_BALL_H
+#define MN_BORIS_BALL_H
 
 #include "Vector2.h"
 
-class Barrel {
+class Ball {
 
 private:
     Vector2 position;
@@ -42,9 +42,9 @@ private:
     double M;
 
 public:
-    Barrel();
+    Ball();
 
-    ~Barrel();
+    ~Ball();
 
     const Vector2 &getPosition() const;
 

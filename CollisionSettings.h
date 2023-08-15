@@ -2,8 +2,8 @@
 // Created by lucas on 16/05/2020.
 //
 
-#ifndef TRAVAIL2_COLLISIONSETTINGS_H
-#define TRAVAIL2_COLLISIONSETTINGS_H
+#ifndef MN_BORIS_COLLISIONSETTINGS_H
+#define MN_BORIS_COLLISIONSETTINGS_H
 
 
 class CollisionSettings {
@@ -35,4 +35,4 @@ public:
 };
 
 
-#endif //TRAVAIL2_COLLISIONSETTINGS_H
+#endif //MN_BORIS_COLLISIONSETTINGS_H

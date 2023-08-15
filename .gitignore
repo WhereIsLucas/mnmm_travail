@@ -75,3 +75,5 @@ fabric.properties
 
 /exports
 /cmake-build-debug/datas
+/cmake-build-release/
+/viz/exports/

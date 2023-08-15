@@ -1,6 +1,6 @@
 
-#ifndef TRAVAIL2_GRAINPRINTER_H
-#define TRAVAIL2_GRAINPRINTER_H
+#ifndef MN_BORIS_GRAINPRINTER_H
+#define MN_BORIS_GRAINPRINTER_H
 
 
 #include <string>
@@ -22,4 +22,4 @@ public:
 };
 
 
-#endif //TRAVAIL2_GRAINPRINTER_H
+#endif //MN_BORIS_GRAINPRINTER_H

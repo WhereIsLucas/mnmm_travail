@@ -2,8 +2,8 @@
 // Created by hugo on 22/04/2020.
 //
 
-#ifndef TRAVAIL2_VECTOR2_H
-#define TRAVAIL2_VECTOR2_H
+#ifndef MN_BORIS_VECTOR2_H
+#define MN_BORIS_VECTOR2_H
 
 
 class Vector2 {
@@ -47,5 +47,5 @@ Vector2 operator-(Vector2 vector1, Vector2 vector2);
 
 Vector2 operator*(double coefficient, Vector2 vector);
 
-#endif //TRAVAIL2_VECTOR2_H
+#endif //MN_BORIS_VECTOR2_H
 

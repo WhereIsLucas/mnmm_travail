@@ -60,7 +60,7 @@ void computeCollisionWithGrain(Grain *pGrain1, Grain *pGrain2, CollisionSettings
     }
 }
 
-void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Barrel *pBarrel, CollisionSettings *collisionSettings) {
+void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Ball *pBarrel, CollisionSettings *collisionSettings) {
     double delta = pBarrel->getRadius() - pGrain1->getRadius() -
                    getDistanceBetweenVectors(pGrain1->getPosition(), pBarrel->getPosition());
     if (delta < 0) {
@@ -106,7 +106,7 @@ void computeCollusionBetweenGrainAndBarrel(Grain *pGrain1, Barrel *pBarrel, Coll
 
 }
 
-void computeCollisionBetweenBarrelAndPlan(Barrel *pBarrel, Plan *plan, CollisionSettings *collisionSettings) {
+void computeCollisionBetweenBarrelAndPlan(Ball *pBarrel, Plan *plan, CollisionSettings *collisionSettings) {
     Vector2 normalVector = plan->getNormal();
     Vector2 vecteur = pBarrel->getPosition() - plan->getPosition();
     //vecteur.display();

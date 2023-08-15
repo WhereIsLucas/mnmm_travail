@@ -1,6 +1,6 @@
 
-#ifndef TRAVAIL2_PLAN_H
-#define TRAVAIL2_PLAN_H
+#ifndef MN_BORIS_PLAN_H
+#define MN_BORIS_PLAN_H
 
 #include <string>
 #include "Vector2.h"
@@ -35,4 +35,4 @@ public:
     void initPlanFromCoordinates(Vector2 a, Vector2 b);
 };
 
-#endif //TRAVAIL2_PLAN_H
+#endif //MN_BORIS_PLAN_H

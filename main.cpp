@@ -3,8 +3,8 @@
 #include <map>
 #include <omp.h>
 #include "Grain.h"
-#include "Barrel.h"
-#include "BarrelPrinter.h"
+#include "Ball.h"
+#include "BallPrinter.h"
 #include "Plan.h"
 #include "Cell.h"
 #include "GrainPrinter.h"
@@ -16,7 +16,7 @@
 #include <fstream>
 
 int main(int argc, char **argv) {
-    //RANDOM
+    //RANDOM INIT
     auto t1 = omp_get_wtime();
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -26,10 +26,11 @@ int main(int argc, char **argv) {
     int i;
     double m_tot = 0;
 
-//Collisions settings
+    //Collisions settings
     auto grainCollisionsSettings = new CollisionSettings(.9, .6, 100000., 1000.);
-    auto barrelCollisionsSettings = new CollisionSettings(.9, .6, 100. * 100000., 1000.);
-    auto barrelGrainCollisionsSettings = new CollisionSettings(.9, .6, 1000000., 10000.);
+    auto ballCollisionsSettings = new CollisionSettings(.9, .6, 100. * 100000., 1000.);
+    auto ballGrainCollisionsSettings = new CollisionSettings(.9, .6, 1000000., 10000.);
+
     // VIDEO OPTIONS
     int fps = 25;
     double tStartCapture = 0.;
@@ -37,19 +38,17 @@ int main(int argc, char **argv) {
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
 
-    GrainPrinter grainPrinter("datas/grain/");
-    BarrelPrinter barrelPrinter("datas/barrel/");
+    GrainPrinter grainPrinter("data/grain/");
+    BallPrinter ballPrinter("data/ball/");
 
 // GRAINS
-    double prop = 0.7; //Proportion de remplissage voulue (entre 0 et 1)
-    double radiusRandom = 0.5; //Distribution des radius (entre 0 et 1)
+    double prop = 0.4; //Proportion de remplissage voulue (entre 0 et 1)
     double radius = 0.075; //Radius moyen des grains
     int numberOfGrains = (int) (prop / pow(radius, 2));
-    std::ofstream myfile;
-    myfile.open("datas/infos.txt");
-    myfile << prop << "," << radius << ',' << radiusRandom << ',' << numberOfGrains << std::endl;;
-    myfile.close();
-    std::cout << numberOfGrains << std::endl;
+    std::ofstream infoFile;
+    infoFile.open("data/infos.txt");
+    infoFile << prop << "," << radius <<  ',' << numberOfGrains << std::endl;;
+    infoFile.close();
 
     double mass; //Define later
     double rho = 1600.; //masse volumique du sable
@@ -58,63 +57,42 @@ int main(int argc, char **argv) {
     int numberOfOverlaps;
 
 // BARREL
-    double barrelRadius = 1.;
-    double barrelRho = 1400.; //masse volumique du PVC
-    double barrelMass = 2. * M_PI + barrelRadius * 0.01 * barrelRho;
-    Barrel barrel;
+    double ballRadius = 1.;
+    double ballRho = 1400.; //masse volumique du PVC
+    double ballMass = 2. * M_PI + ballRadius * 0.01 * ballRho;
+    Ball ball;
 
-//this setups the getRadius distribution
+    //this setups the getRadius distribution
     double radiusMean = radius;
-    std::uniform_real_distribution<double> radiusDistribution(radiusMean - (radiusRandom * radiusMean),
-                                                              radiusMean + (radiusRandom
-                                                                            * radiusMean));
 
-//plan et domaine
-    int numberOfRevolution = 4;  //Nbr de révoluton du barrel sur le plan
+    // setup the domain and the base plane
 
-    double alphaDegree = 15; //Angle d'inclinaison du plan
-    double alpha = alphaDegree * M_PI / 180;
-
-    double xDomain = 4. * barrelRadius * numberOfRevolution;
-
-    Vector2 a(0, xDomain * tan(alpha));
+    double xDomain = 1.2 * ballRadius;
+    Vector2 a(0, xDomain);
     Vector2 b(xDomain, 0);
+    Plan vibratingPlane;
 
-    Plan plan;
-    plan.initPlanFromCoordinates(a, b);
-    plan.printPlanInfos("datas/plan.txt");
+    vibratingPlane.initPlanFromCoordinates(a, b);
+    vibratingPlane.printPlanInfos("data/vibratingPlane.txt");
 
-    double yDomain = plan.getPointFromX(0).getY() + 2. * barrelRadius;
+    double yDomain = 5.* ballRadius;
 
-    //Plan 2 pour stopper le tonneau
-    Vector2 c(xDomain, 0);
-    Vector2 d(xDomain + 1, yDomain);
-    Plan plan2;
-    plan2.initPlanFromCoordinates(c, d);
-    plan.printPlanInfos("datas/plan2.txt");
-
-    //Définition du domaine et impression pour le code python
+    //Définition du domain et impression pour le code python
     Domain domain(xDomain, yDomain);
-    std::cout << xDomain << " " << yDomain << std::endl;
-    domain.printDomainInfos("datas/domain.txt");
+    domain.printDomainInfos("data/domain.txt");
 
 
-//ON place les grains et le barrel
-    double xBarrel = barrelRadius - barrelRadius * sin(alpha);
-    Vector2 barrelPosition(plan.getPointFromX(xBarrel));
-    double deltaBarrel = barrelPosition.getY() - plan.getPointFromX(barrelRadius).getY();
-    barrel.initBarrel(barrelRadius, barrelMass,
-                      plan.getPointFromX(barrelRadius) + Vector2(0, barrelRadius) + Vector2(0, deltaBarrel),
-                      Vector2(0.));
+    //ON place les grains et le ball
+    double xBall = ballRadius;
+    Vector2 ballPosition(vibratingPlane.getPointFromX(xBall));
+    ball.initBarrel(ballRadius, ballMass,Vector2(0, ballRadius),Vector2(0.));
 
     while (numberOfPlacedGrains < numberOfGrains) {
-        radius = fabs(radiusDistribution(gen));
         numberOfOverlaps = 0;
         double direction = (double) (uniformRealDistribution(gen)) * 2 * M_PI;
-        double randomRadius =
-                (double) sqrt(uniformRealDistribution(gen)) * (barrelRadius) * .90;//sqrt pour que ce soit uniforme
-        Vector2 grainPosition(randomRadius * cos(direction), randomRadius * sin(direction));
-        grainPosition = grainPosition + barrel.getPosition();
+        double randomPositionRadius = (double) sqrt(uniformRealDistribution(gen)) * (ballRadius) * .90;//sqrt pour que ce soit uniforme
+        Vector2 grainPosition(randomPositionRadius * cos(direction), randomPositionRadius * sin(direction));
+        grainPosition = grainPosition + ball.getPosition();
         for (i = 0; i < numberOfPlacedGrains; i++) { //Regarder si il n'y a pas d'overlap
             if (getDistanceBetweenVectors(grainPosition, grains[i].getPosition()) <
                 radius + grains[i].getRadius()) {
@@ -127,24 +105,23 @@ int main(int argc, char **argv) {
             m_tot += mass;
             grains[numberOfPlacedGrains].initDisk(numberOfPlacedGrains, radius, mass, grainPosition, Vector2(0.));
             numberOfPlacedGrains++;
-            std::cout << numberOfPlacedGrains << std::endl;
         }
     }
     //Collisions Settings
-    std::cout << "Grains and Barrel are placed" << std::endl;
+    std::cout << "Grains and Ball are placed" << std::endl;
 
 
-//CLEAR FILES
+    //CLEAR FILES
     for (int l = 0; l <= totalFrames; l++) {
         grainPrinter.clearPrint(l);
-        barrelPrinter.clearPrint(l);
+        ballPrinter.clearPrint(l);
     }
 
-//record initial state
+    //record initial state
     for (i = 0; i < numberOfGrains; i++) {
         grainPrinter.print(grains[i], 0);
     }
-    barrelPrinter.print(barrel, 0);
+    ballPrinter.print(ball, 0);
     std::cout << "Initial state in saved" << std::endl;
 
     double t = 0.;
@@ -153,7 +130,6 @@ int main(int argc, char **argv) {
         if (t > totalTime) {
             break;
         }
-        /*** refresh and update position***/
 
         //loop on grains
 
@@ -162,9 +138,9 @@ int main(int argc, char **argv) {
             grains[i].resetForce();
             grains[i].addGravityForce(Vector2(0, -9.81));
         }
-        barrel.updatePosition(dt / 2.);
-        barrel.resetForce();
-        barrel.addGravityForce(Vector2(0, -9.81));
+        ball.updatePosition(dt / 2.);
+        ball.resetForce();
+        ball.addGravityForce(Vector2(0, -9.81));
 
 
         /*** contact detection and forces ***/
@@ -172,19 +148,18 @@ int main(int argc, char **argv) {
             for (int j = i + 1; j < numberOfGrains; ++j) {
                 computeCollisionWithGrain(&grains[i], &grains[j], grainCollisionsSettings);
             }
-            //Collisions with the barrel
-            computeCollusionBetweenGrainAndBarrel(&grains[i], &barrel, barrelGrainCollisionsSettings);
+            //Collisions with the ball
+            computeCollusionBetweenGrainAndBarrel(&grains[i], &ball, ballGrainCollisionsSettings);
         }
-        computeCollisionBetweenBarrelAndPlan(&barrel, &plan, barrelCollisionsSettings);
-        computeCollisionBetweenBarrelAndPlan(&barrel, &plan2, barrelCollisionsSettings);
+        computeCollisionBetweenBarrelAndPlan(&ball, &vibratingPlane, ballCollisionsSettings);
 
         //update velocity and position
         for (i = 0; i < numberOfGrains; i++) {
             grains[i].updateVelocity(dt);
             grains[i].updatePosition(dt / 2.);
         }
-        barrel.updateVelocity(dt);
-        barrel.updatePosition(dt / 2.);
+        ball.updateVelocity(dt);
+        ball.updatePosition(dt / 2.);
         //record
         recTime = t - tStartCapture;
         if (recTime >= 0.) {
@@ -192,7 +167,7 @@ int main(int argc, char **argv) {
                 for (i = 0; i < numberOfGrains; i++) {
                     grainPrinter.print(grains[i], (int) ((recTime + dt) * fps));
                 }
-                barrelPrinter.print(barrel, (int) ((recTime + dt) * fps));
+                ballPrinter.print(ball, (int) ((recTime + dt) * fps));
                 std::cout << "PRINTED IMAGE : " << (int) ((recTime + dt) * fps) << std::endl;
             }
         }
