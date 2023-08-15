@@ -51,7 +51,7 @@ if totalFramesGrains > 0:
                                           names=['ID', 'x', 'y', 'vx', 'vy', 'theta', 'radius']))
     showingFrame = 0
     scatGrain = plt.scatter(dataGrain[showingFrame]["x"], dataGrain[showingFrame]['y'], alpha=0.5,
-                            s=dataGrain[0]['radius'] * 1 * 100, color="blue")
+                            s=dataGrain[0]['radius'] * 1.3 * 10000, color="blue")
 
 plt.title('Scatter plot test')
 plt.axis("equal")

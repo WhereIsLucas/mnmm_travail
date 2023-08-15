@@ -31,9 +31,9 @@ int main(int argc, char **argv) {
     auto ballGrainCollisionsSettings = new CollisionSettings(.9, .6, 1000000., 10000.);
 
     // VIDEO OPTIONS
-    int fps = 25;
+    int fps = 25*2;
     double tStartCapture = 0.;
-    double totalTime = 10;
+    double totalTime = 3;
     int totalFrames = (int) ((totalTime - tStartCapture) * fps);
     double recTime;
 
@@ -42,9 +42,10 @@ int main(int argc, char **argv) {
     PlanePrinter planePrinter("data/plane/");
 
 // GRAINS
-    double prop = 0.; //Proportion de remplissage voulue (entre 0 et 1)
+    double prop = 0.1; //Proportion de remplissage voulue (entre 0 et 1)
     double radius = 0.002; //Radius moyen des grains
     int numberOfGrains = (int) (prop / pow(radius, 2));
+    numberOfGrains = 120;
     std::ofstream infoFile;
     infoFile.open("data/infos.txt");
     infoFile << prop << "," << radius <<  ',' << numberOfGrains << std::endl;;
@@ -68,8 +69,8 @@ int main(int argc, char **argv) {
     double xDomain = 1.2 * ballRadius;
     Plane vibratingPlane;
     vibratingPlane.initPlanFromCoordinates(Vector2(-2., 0), Vector2(2., 0));
-    double frequency = 6.;
-    double amplitude = 0.0095;
+    double frequency = 14.;
+    double amplitude = 0.02;
 
     double yDomain = 5.* ballRadius;
 
@@ -79,7 +80,7 @@ int main(int argc, char **argv) {
 
 
     //ON place les grains et le ball
-    ball.initBall(ballRadius, ballMass, Vector2(0, ballRadius), Vector2(0.));
+    ball.initBall(ballRadius, ballMass, Vector2(0, 2.*ballRadius), Vector2(0.));
 
     while (numberOfPlacedGrains < numberOfGrains) {
         numberOfOverlaps = 0;
